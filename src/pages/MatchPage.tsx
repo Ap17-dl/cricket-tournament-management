@@ -562,8 +562,20 @@ export function MatchPage() {
   const nonStrikerPlayer = players(nonStrikerId)
   const bowlerPlayer = players(bowlerId)
 
-  const battingXI = playingXI.filter((xi) => xi.team_id === currentInnings?.batting_team_id)
-  const bowlingXI = playingXI.filter((xi) => xi.team_id === currentInnings?.bowling_team_id)
+  const battingTeamId = currentInnings?.batting_team_id
+  const bowlingTeamId = currentInnings?.bowling_team_id
+
+  const battingXISet = playingXI.filter((xi) => xi.team_id === battingTeamId)
+  const bowlingXISet = playingXI.filter((xi) => xi.team_id === bowlingTeamId)
+
+  // Fall back to all team players when no Playing XI has been set for a team
+  const battingXI = battingXISet.length > 0
+    ? battingXISet
+    : allPlayers.filter((p) => p.team_id === battingTeamId).map((p) => ({ player_id: p.id, player: p, team_id: battingTeamId! }))
+  const bowlingXI = bowlingXISet.length > 0
+    ? bowlingXISet
+    : allPlayers.filter((p) => p.team_id === bowlingTeamId).map((p) => ({ player_id: p.id, player: p, team_id: bowlingTeamId! }))
+
   const availableBatsmen = battingXI.filter((xi) => xi.player_id !== strikerId && xi.player_id !== nonStrikerId)
 
   const buildCommentary = (runs: number, extra?: ExtraType) => {
