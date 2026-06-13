@@ -19,7 +19,7 @@ import {
 import { cn } from '@/lib/utils'
 
 // ===================== OVER TRACKER =====================
-function OverTracker({ balls, maxBalls = 6 }: { balls: BallEvent[]; maxBalls?: number }) {
+function OverTracker({ balls }: { balls: BallEvent[] }) {
   const getBallDisplay = (ball: BallEvent) => {
     if (ball.is_wicket) return { label: 'W', cls: 'bg-cricket-wicket text-white' }
     if (ball.extra_type === 'wide') return { label: 'Wd', cls: 'bg-muted-foreground/20 text-muted-foreground text-[9px]' }
@@ -30,12 +30,17 @@ function OverTracker({ balls, maxBalls = 6 }: { balls: BallEvent[]; maxBalls?: n
     return { label: String(ball.runs), cls: 'bg-secondary text-secondary-foreground' }
   }
 
-  const allBalls = balls
+  // Legal balls (not wide/no-ball) count toward the 6-ball over
+  const legalCount = balls.filter(
+    (b) => !b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye'
+  ).length
+  // Total slots = all delivered balls + remaining legal balls needed
+  const totalSlots = balls.length + Math.max(0, 6 - legalCount)
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      {Array.from({ length: maxBalls }).map((_, i) => {
-        const ball = allBalls[i]
+      {Array.from({ length: totalSlots }).map((_, i) => {
+        const ball = balls[i]
         if (!ball) {
           return (
             <div
@@ -83,6 +88,7 @@ function ScoringButton({
 
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       className={cn(
@@ -801,7 +807,7 @@ export function MatchPage() {
                 {Number(currentInnings.overs_completed).toFixed(1)}/{match.overs}
               </span>
             </div>
-            <OverTracker balls={currentOverBalls} maxBalls={6} />
+            <OverTracker balls={currentOverBalls} />
 
             <Separator className="my-3" />
 
@@ -879,6 +885,7 @@ export function MatchPage() {
                     </p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setPendingExtra(null)}
                     className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted transition-colors"
                   >
@@ -890,7 +897,8 @@ export function MatchPage() {
                   {[0, 1, 2, 3, 4, 5, 6].map((r) => (
                     <button
                       key={r}
-                      onClick={() => setPendingExtra((prev) => prev ? { ...prev, runs: r } : null)}
+                      type="button"
+                      onClick={() => setPendingExtra({ ...pendingExtra, runs: r })}
                       className={cn(
                         'h-12 rounded-xl font-bold text-lg transition-all active:scale-95',
                         pendingExtra.runs === r
@@ -1078,6 +1086,7 @@ export function MatchPage() {
               <div className="grid grid-cols-3 gap-2">
                 {(['bowled', 'lbw', 'caught', 'run_out', 'stumped', 'hit_wicket'] as WicketType[]).map((wt) => (
                   <button
+                    type="button"
                     key={wt}
                     onClick={() => setWicketType(wt)}
                     className={cn(
@@ -1132,6 +1141,7 @@ export function MatchPage() {
           <div className="space-y-2 py-2">
             {bowlingXI.map((xi) => (
               <button
+                type="button"
                 key={xi.player_id}
                 onClick={() => {
                   setBowlerId(xi.player_id)
@@ -1219,6 +1229,7 @@ export function MatchPage() {
               <div className="grid grid-cols-2 gap-2">
                 {[teamA, teamB].map((team) => (
                   <button
+                    type="button"
                     key={team?.id}
                     onClick={() => setTossWinnerId(team?.id)}
                     className={cn(
@@ -1236,6 +1247,7 @@ export function MatchPage() {
               <div className="grid grid-cols-2 gap-2">
                 {(['bat', 'bowl'] as TossDecision[]).map((d) => (
                   <button
+                    type="button"
                     key={d}
                     onClick={() => setTossDecision(d)}
                     className={cn(
@@ -1268,6 +1280,7 @@ export function MatchPage() {
               const selected = xiPlayerIds.includes(player.id)
               return (
                 <button
+                  type="button"
                   key={player.id}
                   onClick={() => setXIPlayerIds((prev) =>
                     selected ? prev.filter((id) => id !== player.id) : prev.length < 11 ? [...prev, player.id] : prev
