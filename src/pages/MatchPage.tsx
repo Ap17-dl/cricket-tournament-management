@@ -260,6 +260,7 @@ export function MatchPage() {
   const [wicketType, setWicketType] = useState<WicketType>('bowled')
   const [fielderId, setFielderId] = useState<string>('')
   const [newBatsmanId, setNewBatsmanId] = useState<string>('')
+  const [pendingExtra, setPendingExtra] = useState<{ type: ExtraType; runs: number } | null>(null)
   const [selectBowlerDialog, setSelectBowlerDialog] = useState(false)
   const [setupDialog, setSetupDialog] = useState(false)
   const [tossDialog, setTossDialog] = useState(false)
@@ -405,7 +406,7 @@ export function MatchPage() {
       extra_type: extraType || null,
       extra_runs: extraRuns,
       is_wicket: false,
-      commentary: buildCommentary(runs, extraType),
+      commentary: buildCommentary(runs, extraType, extraRuns),
     }).select().single()
 
     if (ball) {
@@ -453,6 +454,19 @@ export function MatchPage() {
 
       fetchInnings()
     }
+  }
+
+  const confirmExtra = () => {
+    if (!pendingExtra) return
+    const { type, runs } = pendingExtra
+    if (type === 'wide') {
+      // Wide penalty (1) + any additional runs are all extras
+      recordBall(0, 'wide', 1 + runs)
+    } else {
+      // No ball penalty (1) extra + batsman runs score normally
+      recordBall(runs, 'no_ball', 1)
+    }
+    setPendingExtra(null)
   }
 
   const recordWicket = async () => {
@@ -578,9 +592,18 @@ export function MatchPage() {
 
   const availableBatsmen = battingXI.filter((xi) => xi.player_id !== strikerId && xi.player_id !== nonStrikerId)
 
-  const buildCommentary = (runs: number, extra?: ExtraType) => {
-    if (extra === 'wide') return `Wide ball — +1 extra`
-    if (extra === 'no_ball') return `No ball!`
+  const buildCommentary = (runs: number, extra?: ExtraType, extraRuns = 0) => {
+    if (extra === 'wide') {
+      const additional = extraRuns - 1
+      return additional > 0
+        ? `Wide + ${additional} run${additional > 1 ? 's' : ''} — ${extraRuns} extras`
+        : `Wide ball — +1 extra`
+    }
+    if (extra === 'no_ball') {
+      return runs > 0
+        ? `No ball! ${runs} run${runs > 1 ? 's' : ''} to batsman (+1 penalty)`
+        : `No ball! — +1 extra`
+    }
     if (runs === 4) return `FOUR! Boundary hit`
     if (runs === 6) return `SIX! Maximum!`
     if (runs === 0) return `Dot ball`
@@ -841,84 +864,148 @@ export function MatchPage() {
             <CardTitle className="text-sm text-muted-foreground uppercase tracking-wide">Score Ball</CardTitle>
           </CardHeader>
           <CardContent className="pt-3 pb-4">
-            {/* Runs */}
-            <div className="grid grid-cols-6 gap-1.5 mb-2">
-              {[0, 1, 2, 3, 4, 6].map((r) => (
-                <ScoringButton
-                  key={r}
-                  label={String(r)}
-                  variant={r === 4 ? 'boundary' : r === 6 ? 'six' : r === 0 ? 'muted' : 'default'}
-                  onClick={() => recordBall(r)}
-                />
-              ))}
-            </div>
+            {pendingExtra ? (
+              /* ── Extra runs picker (Wide / No Ball) ── */
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold">
+                      {pendingExtra.type === 'wide' ? 'Wide' : 'No Ball'} — runs off this ball?
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {pendingExtra.type === 'wide'
+                        ? 'All runs count as extras (+1 penalty)'
+                        : 'Runs go to batsman, +1 penalty extra'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setPendingExtra(null)}
+                    className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
 
-            {/* Extras */}
-            <div className="grid grid-cols-4 gap-1.5 mb-2">
-              {[
-                { label: 'Wide', type: 'wide' as ExtraType },
-                { label: 'No Ball', type: 'no_ball' as ExtraType },
-                { label: 'Bye', type: 'bye' as ExtraType },
-                { label: 'Leg Bye', type: 'leg_bye' as ExtraType },
-              ].map(({ label, type }) => (
-                <ScoringButton
-                  key={type}
-                  label={label}
-                  variant="extra"
-                  onClick={() => recordBall(0, type, 1)}
-                />
-              ))}
-            </div>
+                <div className="grid grid-cols-7 gap-1.5">
+                  {[0, 1, 2, 3, 4, 5, 6].map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => setPendingExtra((prev) => prev ? { ...prev, runs: r } : null)}
+                      className={cn(
+                        'h-12 rounded-xl font-bold text-lg transition-all active:scale-95',
+                        pendingExtra.runs === r
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : r === 4
+                          ? 'bg-cricket-boundary/20 text-cricket-boundary border border-cricket-boundary/30 hover:bg-cricket-boundary/30'
+                          : r === 6
+                          ? 'bg-cricket-six/20 text-cricket-six border border-cricket-six/30 hover:bg-cricket-six/30'
+                          : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                      )}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
 
-            {/* Wicket + utilities */}
-            <div className="grid grid-cols-3 gap-1.5">
-              <ScoringButton
-                label="WICKET"
-                variant="wicket"
-                className="col-span-2 text-base"
-                onClick={() => setWicketDialog(true)}
-              />
-              <ScoringButton
-                label="↩ Undo"
-                variant="muted"
-                onClick={undoLastBall}
-              />
-            </div>
+                <Button className="w-full gap-2" onClick={confirmExtra}>
+                  Confirm — {pendingExtra.type === 'wide' ? 'Wide' : 'No Ball'}
+                  {pendingExtra.runs > 0 ? ` + ${pendingExtra.runs}` : ''} (
+                  {pendingExtra.type === 'wide'
+                    ? `+${1 + pendingExtra.runs} extras`
+                    : pendingExtra.runs > 0
+                    ? `${pendingExtra.runs} runs + 1 extra`
+                    : '+1 extra'})
+                </Button>
+              </div>
+            ) : (
+              <>
+                {/* Runs */}
+                <div className="grid grid-cols-6 gap-1.5 mb-2">
+                  {[0, 1, 2, 3, 4, 6].map((r) => (
+                    <ScoringButton
+                      key={r}
+                      label={String(r)}
+                      variant={r === 4 ? 'boundary' : r === 6 ? 'six' : r === 0 ? 'muted' : 'default'}
+                      onClick={() => recordBall(r)}
+                    />
+                  ))}
+                </div>
 
-            <Separator className="my-3" />
+                {/* Extras */}
+                <div className="grid grid-cols-4 gap-1.5 mb-2">
+                  <ScoringButton
+                    label="Wide"
+                    variant="extra"
+                    onClick={() => setPendingExtra({ type: 'wide', runs: 0 })}
+                  />
+                  <ScoringButton
+                    label="No Ball"
+                    variant="extra"
+                    onClick={() => setPendingExtra({ type: 'no_ball', runs: 0 })}
+                  />
+                  <ScoringButton
+                    label="Bye"
+                    variant="extra"
+                    onClick={() => recordBall(0, 'bye', 1)}
+                  />
+                  <ScoringButton
+                    label="Leg Bye"
+                    variant="extra"
+                    onClick={() => recordBall(0, 'leg_bye', 1)}
+                  />
+                </div>
 
-            <div className="grid grid-cols-3 gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={() => {
-                  const tmp = strikerId
-                  setStrikerId(nonStrikerId)
-                  setNonStrikerId(tmp)
-                }}
-              >
-                <ArrowLeftRight className="size-3.5" />
-                Swap
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={() => setSelectBowlerDialog(true)}
-              >
-                <RotateCcw className="size-3.5" />
-                Bowler
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-destructive gap-1"
-                onClick={endInnings}
-              >
-                End Inn.
-              </Button>
-            </div>
+                {/* Wicket + utilities */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  <ScoringButton
+                    label="WICKET"
+                    variant="wicket"
+                    className="col-span-2 text-base"
+                    onClick={() => setWicketDialog(true)}
+                  />
+                  <ScoringButton
+                    label="↩ Undo"
+                    variant="muted"
+                    onClick={undoLastBall}
+                  />
+                </div>
+
+                <Separator className="my-3" />
+
+                <div className="grid grid-cols-3 gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => {
+                      const tmp = strikerId
+                      setStrikerId(nonStrikerId)
+                      setNonStrikerId(tmp)
+                    }}
+                  >
+                    <ArrowLeftRight className="size-3.5" />
+                    Swap
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => setSelectBowlerDialog(true)}
+                  >
+                    <RotateCcw className="size-3.5" />
+                    Bowler
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive gap-1"
+                    onClick={endInnings}
+                  >
+                    End Inn.
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
