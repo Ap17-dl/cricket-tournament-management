@@ -6,3 +6,5 @@ node_modules
 *.md
 *.local
 
+dist
+public
