@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
-import type { Profile } from '@/lib/types'
+import type { Profile, UserRole } from '@/lib/types'
 import type { User } from '@supabase/supabase-js'
 
 interface AuthState {
@@ -12,6 +12,7 @@ interface AuthState {
   setLoading: (loading: boolean) => void
   signOut: () => Promise<void>
   fetchProfile: (userId: string, userEmail?: string) => Promise<void>
+  updateRole: (role: UserRole) => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -43,13 +44,28 @@ export const useAuthStore = create<AuthState>((set) => ({
         .from('profiles')
         .upsert({
           id: userId,
-          name: meta?.name || email.split('@')[0] || 'User',
+          name: meta?.name || meta?.full_name || email.split('@')[0] || 'User',
           email,
           role: meta?.role || 'viewer',
         })
         .select()
         .single()
       if (created) set({ profile: created })
+    }
+  },
+  updateRole: async (role: UserRole) => {
+    const user = useAuthStore.getState().user
+    if (!user) return
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ role })
+      .eq('id', user.id)
+      .select()
+      .single()
+    if (data) {
+      set({ profile: data })
+    } else if (error) {
+      console.error('Error updating role:', error.message)
     }
   },
 }))

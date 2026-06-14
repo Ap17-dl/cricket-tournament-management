@@ -116,10 +116,14 @@ function ScorecardTab({ innings, players }: { innings: Innings | null; players: 
     if (b.batsman_id) {
       if (!batsmenMap[b.batsman_id]) batsmenMap[b.batsman_id] = { runs: 0, balls: 0, fours: 0, sixes: 0, out: false }
       const bm = batsmenMap[b.batsman_id]
-      if (!b.extra_type) bm.balls++
-      bm.runs += b.runs
-      if (b.runs === 4) bm.fours++
-      if (b.runs === 6) bm.sixes++
+      if (b.extra_type !== 'wide') bm.balls++
+      // Only runs off the bat (from normal balls or no-balls) go to the batsman.
+      // Wides, Byes, and Leg Byes go to the team as extras.
+      if (b.extra_type === null || b.extra_type === 'no_ball') {
+        bm.runs += b.runs
+        if (b.runs === 4) bm.fours++
+        if (b.runs === 6) bm.sixes++
+      }
       if (b.is_wicket && b.wicket_type !== 'run_out') bm.out = true
       if (b.is_wicket && b.wicket_type) bm.wicketType = b.wicket_type
     }
@@ -127,7 +131,9 @@ function ScorecardTab({ innings, players }: { innings: Innings | null; players: 
       if (!bowlersMap[b.bowler_id]) bowlersMap[b.bowler_id] = { overs: 0, balls: 0, maidens: 0, runs: 0, wickets: 0 }
       const bw = bowlersMap[b.bowler_id]
       if (!b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye') bw.balls++
-      bw.runs += b.runs + b.extra_runs
+      // Bowler runs conceded: runs off bat + wides/no-balls. Byes and Leg Byes are NOT conceded by the bowler.
+      const bowlerRunsConceded = (b.extra_type === 'bye' || b.extra_type === 'leg_bye') ? 0 : (b.runs + b.extra_runs)
+      bw.runs += bowlerRunsConceded
       if (b.is_wicket && b.wicket_type !== 'run_out') bw.wickets++
       bw.overs = Math.floor(bw.balls / 6) + (bw.balls % 6) / 10
     }
@@ -367,7 +373,7 @@ export function MatchPage() {
     fetchMatch()
   }
 
-  const startInnings = async (battingTeamId: string, bowlingTeamId: string, inningsNum: number) => {
+  async function startInnings(battingTeamId: string, bowlingTeamId: string, inningsNum: number) {
     const { data } = await supabase.from('innings').insert({
       match_id: matchId,
       innings_number: inningsNum,
@@ -376,6 +382,10 @@ export function MatchPage() {
     }).select().single()
     if (data) {
       setCurrentInnings(data as Innings)
+      setStrikerId(null)
+      setNonStrikerId(null)
+      setBowlerId(null)
+      setCurrentOverBalls([])
       fetchInnings()
     }
   }
@@ -395,12 +405,37 @@ export function MatchPage() {
     fetchPlayingXI()
   }
 
-  const recordBall = async (runs: number, extraType?: ExtraType, extraRuns = 0) => {
+  async function checkAndEndInnings(newOvers: number, newWickets: number, newTotalRuns: number) {
+    if (!currentInnings || !match) return false
+
+    // 1. All out check
+    const currentBattingXI = playingXI.filter((xi) => xi.team_id === currentInnings.batting_team_id)
+    const battingXIList = currentBattingXI.length > 0
+      ? currentBattingXI
+      : allPlayers.filter((p) => p.team_id === currentInnings.batting_team_id)
+    const maxWickets = battingXIList.length > 0 ? Math.min(10, battingXIList.length - 1) : 10
+    const isAllOut = newWickets >= maxWickets
+
+    // 2. Overs completed check
+    const isOversCompleted = newOvers >= match.overs
+
+    // 3. Target chased check (only in 2nd innings)
+    const inns1 = allInnings[0]
+    const targetVal = inns1?.is_complete && !allInnings[1] ? inns1.total_runs + 1 : null
+    const isTargetChased = targetVal !== null && newTotalRuns >= targetVal
+
+    if (isAllOut || isOversCompleted || isTargetChased) {
+      await endInnings()
+      return true
+    }
+    return false
+  }
+
+  async function recordBall(runs: number, extraType?: ExtraType, extraRuns = 0) {
     if (!currentInnings || !strikerId || !bowlerId) return
 
     const overNum = Math.floor(Number(currentInnings.overs_completed))
-    const ballsInOver = currentOverBalls.filter((b) => !b.extra_type).length
-    const ballNum = ballsInOver + 1
+    const ballNum = currentOverBalls.length + 1
 
     const { data: ball } = await supabase.from('ball_events').insert({
       innings_id: currentInnings.id,
@@ -417,8 +452,9 @@ export function MatchPage() {
 
     if (ball) {
       const isLegalBall = !extraType || extraType === 'bye' || extraType === 'leg_bye'
-      const newBallsInOver = isLegalBall ? ballNum : ballsInOver
-      const overCompleted = newBallsInOver >= 6
+      const currentLegalBalls = Math.round((Number(currentInnings.overs_completed) % 1) * 10)
+      const newLegalBallsCount = isLegalBall ? currentLegalBalls + 1 : currentLegalBalls
+      const overCompleted = newLegalBallsCount >= 6
 
       const newTotalRuns = currentInnings.total_runs + runs + extraRuns
       const newExtras = currentInnings.extras + extraRuns
@@ -426,11 +462,10 @@ export function MatchPage() {
 
       if (isLegalBall) {
         const oversInt = Math.floor(Number(currentInnings.overs_completed))
-        const ballCount = (currentInnings.overs_completed % 1 * 10 + 1)
-        if (ballCount >= 6) {
+        if (newLegalBallsCount >= 6) {
           newOvers = oversInt + 1
         } else {
-          newOvers = oversInt + ballCount / 10
+          newOvers = oversInt + newLegalBallsCount / 10
         }
       }
 
@@ -440,22 +475,28 @@ export function MatchPage() {
         overs_completed: newOvers,
       }).eq('id', currentInnings.id)
 
-      // Rotate strike on odd runs
-      if (runs % 2 !== 0 && !extraType) {
+      // Rotate strike on odd runs (runs off bat, or odd byes/leg_byes)
+      const runsToRotate = (extraType === 'bye' || extraType === 'leg_bye') ? extraRuns : runs
+      if (runsToRotate % 2 !== 0) {
         const tmp = strikerId
         setStrikerId(nonStrikerId)
         setNonStrikerId(tmp)
       }
 
-      // End of over
-      if (overCompleted) {
-        const tmp = strikerId
-        setStrikerId(nonStrikerId)
-        setNonStrikerId(tmp)
-        setCurrentOverBalls([])
-        setSelectBowlerDialog(true)
-      } else {
-        setCurrentOverBalls((prev) => [...prev, ball as BallEvent])
+      // Check if innings completed automatically
+      const inningsEnded = await checkAndEndInnings(newOvers, currentInnings.wickets, newTotalRuns)
+
+      if (!inningsEnded) {
+        // End of over
+        if (overCompleted) {
+          const tmp = strikerId
+          setStrikerId(nonStrikerId)
+          setNonStrikerId(tmp)
+          setCurrentOverBalls([])
+          setSelectBowlerDialog(true)
+        } else {
+          setCurrentOverBalls((prev) => [...prev, ball as BallEvent])
+        }
       }
 
       fetchInnings()
@@ -468,21 +509,23 @@ export function MatchPage() {
     if (type === 'wide') {
       // Wide penalty (1) + any additional runs are all extras
       recordBall(0, 'wide', 1 + runs)
-    } else {
+    } else if (type === 'no_ball') {
       // No ball penalty (1) extra + batsman runs score normally
       recordBall(runs, 'no_ball', 1)
+    } else {
+      // Bye or Leg Bye: batsman gets 0 runs, team gets 'runs' as extras
+      recordBall(0, type, runs)
     }
     setPendingExtra(null)
   }
 
-  const recordWicket = async () => {
+  async function recordWicket() {
     if (!currentInnings || !strikerId || !bowlerId) return
 
     const overNum = Math.floor(Number(currentInnings.overs_completed))
-    const ballsInOver = currentOverBalls.filter((b) => !b.extra_type).length
-    const ballNum = ballsInOver + 1
+    const ballNum = currentOverBalls.length + 1
 
-    await supabase.from('ball_events').insert({
+    const { data: ball } = await supabase.from('ball_events').insert({
       innings_id: currentInnings.id,
       over_number: overNum,
       ball_number: ballNum,
@@ -493,14 +536,15 @@ export function MatchPage() {
       wicket_type: wicketType,
       fielder_id: fielderId || null,
       commentary: `OUT! ${players(strikerId)?.name} - ${wicketType.replace('_', ' ')}`,
-    })
+    }).select().single()
 
     const newWickets = currentInnings.wickets + 1
-    const newOversFloat = (() => {
-      const oversInt = Math.floor(Number(currentInnings.overs_completed))
-      const ballCount = (currentInnings.overs_completed % 1 * 10 + 1)
-      return ballCount >= 6 ? oversInt + 1 : oversInt + ballCount / 10
-    })()
+    const currentLegalBalls = Math.round((Number(currentInnings.overs_completed) % 1) * 10)
+    const newLegalBallsCount = currentLegalBalls + 1
+    const overCompleted = newLegalBallsCount >= 6
+
+    const oversInt = Math.floor(Number(currentInnings.overs_completed))
+    const newOversFloat = overCompleted ? oversInt + 1 : oversInt + newLegalBallsCount / 10
 
     await supabase.from('innings').update({
       wickets: newWickets,
@@ -508,14 +552,36 @@ export function MatchPage() {
     }).eq('id', currentInnings.id)
 
     setWicketDialog(false)
-    if (newBatsmanId) setStrikerId(newBatsmanId)
+    
+    let finalStrikerId = strikerId
+    if (newBatsmanId) {
+      finalStrikerId = newBatsmanId
+      setStrikerId(newBatsmanId)
+    }
     setNewBatsmanId('')
     setWicketType('bowled')
     setFielderId('')
+
+    // Check if innings completed automatically
+    const inningsEnded = await checkAndEndInnings(newOversFloat, newWickets, currentInnings.total_runs)
+
+    if (!inningsEnded) {
+      if (overCompleted) {
+        setStrikerId(nonStrikerId)
+        setNonStrikerId(finalStrikerId)
+        setCurrentOverBalls([])
+        setSelectBowlerDialog(true)
+      } else {
+        if (ball) {
+          setCurrentOverBalls((prev) => [...prev, ball as BallEvent])
+        }
+      }
+    }
+
     fetchInnings()
   }
 
-  const undoLastBall = async () => {
+  async function undoLastBall() {
     if (!currentInnings) return
     const balls = currentInnings.ball_events || []
     if (balls.length === 0) return
@@ -546,7 +612,7 @@ export function MatchPage() {
     fetchInnings()
   }
 
-  const endInnings = async () => {
+  async function endInnings() {
     if (!currentInnings || !match) return
     await supabase.from('innings').update({ is_complete: true }).eq('id', currentInnings.id)
 
@@ -825,8 +891,8 @@ export function MatchPage() {
                 <p className="font-semibold text-sm truncate">{strikerPlayer?.name || 'Select'}</p>
                 {strikerPlayer && (
                   <p className="text-xs text-muted-foreground">
-                    {(currentInnings.ball_events || []).filter((b) => b.batsman_id === strikerId && !b.extra_type).reduce((s, b) => s + b.runs, 0)} (
-                    {(currentInnings.ball_events || []).filter((b) => b.batsman_id === strikerId && !b.extra_type).length})
+                    {(currentInnings.ball_events || []).filter((b) => b.batsman_id === strikerId && (b.extra_type === null || b.extra_type === 'no_ball')).reduce((s, b) => s + b.runs, 0)} (
+                    {(currentInnings.ball_events || []).filter((b) => b.batsman_id === strikerId && b.extra_type !== 'wide').length})
                   </p>
                 )}
               </div>
@@ -841,8 +907,8 @@ export function MatchPage() {
                 <p className="font-semibold text-sm truncate">{nonStrikerPlayer?.name || 'Select'}</p>
                 {nonStrikerPlayer && (
                   <p className="text-xs text-muted-foreground">
-                    {(currentInnings.ball_events || []).filter((b) => b.batsman_id === nonStrikerId && !b.extra_type).reduce((s, b) => s + b.runs, 0)} (
-                    {(currentInnings.ball_events || []).filter((b) => b.batsman_id === nonStrikerId && !b.extra_type).length})
+                    {(currentInnings.ball_events || []).filter((b) => b.batsman_id === nonStrikerId && (b.extra_type === null || b.extra_type === 'no_ball')).reduce((s, b) => s + b.runs, 0)} (
+                    {(currentInnings.ball_events || []).filter((b) => b.batsman_id === nonStrikerId && b.extra_type !== 'wide').length})
                   </p>
                 )}
               </div>
@@ -876,12 +942,21 @@ export function MatchPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold">
-                      {pendingExtra.type === 'wide' ? 'Wide' : 'No Ball'} — runs off this ball?
+                      {pendingExtra.type === 'wide'
+                        ? 'Wide'
+                        : pendingExtra.type === 'no_ball'
+                        ? 'No Ball'
+                        : pendingExtra.type === 'bye'
+                        ? 'Bye'
+                        : 'Leg Bye'}{' '}
+                      — runs off this ball?
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {pendingExtra.type === 'wide'
                         ? 'All runs count as extras (+1 penalty)'
-                        : 'Runs go to batsman, +1 penalty extra'}
+                        : pendingExtra.type === 'no_ball'
+                        ? 'Runs go to batsman, +1 penalty extra'
+                        : 'Runs count as extras, no bowler penalty'}
                     </p>
                   </div>
                   <button
@@ -916,13 +991,16 @@ export function MatchPage() {
                 </div>
 
                 <Button className="w-full gap-2" onClick={confirmExtra}>
-                  Confirm — {pendingExtra.type === 'wide' ? 'Wide' : 'No Ball'}
+                  Confirm — {pendingExtra.type === 'wide' ? 'Wide' : pendingExtra.type === 'no_ball' ? 'No Ball' : pendingExtra.type === 'bye' ? 'Bye' : 'Leg Bye'}
                   {pendingExtra.runs > 0 ? ` + ${pendingExtra.runs}` : ''} (
                   {pendingExtra.type === 'wide'
                     ? `+${1 + pendingExtra.runs} extras`
-                    : pendingExtra.runs > 0
-                    ? `${pendingExtra.runs} runs + 1 extra`
-                    : '+1 extra'})
+                    : pendingExtra.type === 'no_ball'
+                    ? pendingExtra.runs > 0
+                      ? `${pendingExtra.runs} runs + 1 extra`
+                      : '+1 extra'
+                    : `+${pendingExtra.runs} extras`}
+                  )
                 </Button>
               </div>
             ) : (
@@ -954,12 +1032,12 @@ export function MatchPage() {
                   <ScoringButton
                     label="Bye"
                     variant="extra"
-                    onClick={() => recordBall(0, 'bye', 1)}
+                    onClick={() => setPendingExtra({ type: 'bye', runs: 0 })}
                   />
                   <ScoringButton
                     label="Leg Bye"
                     variant="extra"
-                    onClick={() => recordBall(0, 'leg_bye', 1)}
+                    onClick={() => setPendingExtra({ type: 'leg_bye', runs: 0 })}
                   />
                 </div>
 

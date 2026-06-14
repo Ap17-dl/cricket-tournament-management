@@ -303,6 +303,48 @@ function MatchesTab({
     if (data) navigate(`/matches/${data.id}`)
   }
 
+  const generateFixtures = async () => {
+    if (teams.length < 2) return
+    setLoading(true)
+
+    const fixtures: Array<{ team_a_id: string; team_b_id: string }> = []
+    for (let i = 0; i < teams.length; i++) {
+      for (let j = i + 1; j < teams.length; j++) {
+        fixtures.push({
+          team_a_id: teams[i].id,
+          team_b_id: teams[j].id,
+        })
+      }
+    }
+
+    const startDate = tournament.start_date ? new Date(tournament.start_date) : new Date()
+    startDate.setHours(10, 0, 0, 0)
+
+    const matchesToInsert = fixtures.map((fixture, idx) => {
+      const scheduledTime = new Date(startDate)
+      scheduledTime.setDate(startDate.getDate() + idx)
+
+      return {
+        tournament_id: tournament.id,
+        team_a_id: fixture.team_a_id,
+        team_b_id: fixture.team_b_id,
+        match_type: 'League',
+        scheduled_at: scheduledTime.toISOString(),
+        format: tournament.format,
+        overs: tournament.overs || 20,
+        match_number: matches.length + idx + 1,
+        status: 'scheduled'
+      }
+    })
+
+    const { error } = await supabase.from('matches').insert(matchesToInsert)
+    if (error) {
+      console.error('Error generating fixtures:', error.message)
+    }
+    setLoading(false)
+    onRefresh()
+  }
+
   const statusColors: Record<string, string> = {
     scheduled: 'bg-muted text-muted-foreground',
     live: 'bg-primary/10 text-primary',
@@ -313,7 +355,18 @@ function MatchesTab({
   return (
     <div className="space-y-4">
       {isOrganizer && teams.length >= 2 && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={generateFixtures}
+            disabled={loading}
+          >
+            <Trophy className="size-4 animate-pulse" />
+            Generate League Fixtures
+          </Button>
+
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-1.5">

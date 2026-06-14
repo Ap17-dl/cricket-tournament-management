@@ -20,6 +20,7 @@ import {
   LogOut,
   ChevronDown,
   Zap,
+  RefreshCw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -31,7 +32,7 @@ const navLinks = [
 ]
 
 export function Navbar() {
-  const { profile, signOut } = useAuthStore()
+  const { user, profile, signOut, updateRole } = useAuthStore()
   const { theme } = useAppStore()
   const location = useLocation()
   const navigate = useNavigate()
@@ -42,6 +43,15 @@ export function Navbar() {
     await signOut()
     navigate('/login')
   }
+
+  const toggleRole = async () => {
+    const currentRole = profile?.role || 'viewer'
+    const nextRole = currentRole === 'viewer' ? 'organizer' : 'viewer'
+    await updateRole(nextRole)
+  }
+
+  const displayName = profile?.name || user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email || 'User'
+  const userInitial = displayName.charAt(0).toUpperCase()
 
   return (
     <header
@@ -91,26 +101,26 @@ export function Navbar() {
             </Link>
           )}
 
-          {profile ? (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent transition-colors">
                   <Avatar className="size-7">
                     <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                      {profile.name?.charAt(0).toUpperCase() || 'U'}
+                      {userInitial}
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-sm font-medium hidden sm:block max-w-[100px] truncate">
-                    {profile.name}
+                    {displayName}
                   </span>
                   <Badge variant="secondary" className="text-xs hidden sm:flex capitalize">
-                    {profile.role}
+                    {profile?.role || 'viewer'}
                   </Badge>
                   <ChevronDown className="size-3 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                {profile.role === 'organizer' && (
+                {profile?.role === 'organizer' && (
                   <>
                     <DropdownMenuItem asChild>
                       <Link to="/tournaments/new" className="flex items-center gap-2">
@@ -126,6 +136,11 @@ export function Navbar() {
                     <Users className="size-4" />
                     My Tournaments
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={toggleRole} className="cursor-pointer">
+                  <RefreshCw className="size-4 text-muted-foreground mr-2" />
+                  Switch to {profile?.role === 'viewer' ? 'Organizer' : 'Viewer'}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
