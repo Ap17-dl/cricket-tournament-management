@@ -3,9 +3,10 @@ import { supabase } from '@/lib/supabase'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
-import { Medal, Search, TrendingUp } from 'lucide-react'
+import { Medal, Search, TrendingUp, Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { PlayerStats, Player } from '@/lib/types'
+import type { PlayerStats, Player, Tournament } from '@/lib/types'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface StatsWithPlayer extends PlayerStats {
   player: Player & { team: { team_name: string } }
@@ -15,18 +16,49 @@ export function StatsPage() {
   const [stats, setStats] = useState<StatsWithPlayer[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [tournaments, setTournaments] = useState<Tournament[]>([])
+  const [selectedTournamentId, setSelectedTournamentId] = useState<string>('')
+  const [tournamentsLoading, setTournamentsLoading] = useState(true)
 
   useEffect(() => {
-    fetchStats()
+    fetchTournaments()
   }, [])
 
-  const fetchStats = async () => {
+  const fetchTournaments = async () => {
+    setTournamentsLoading(true)
+    const { data } = await supabase
+      .from('tournaments')
+      .select('*')
+      .order('name', { ascending: true })
+    if (data && data.length > 0) {
+      setTournaments(data as Tournament[])
+      setSelectedTournamentId(data[0].id)
+    } else {
+      setTournamentsLoading(false)
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (selectedTournamentId) {
+      fetchStats(selectedTournamentId)
+    }
+  }, [selectedTournamentId])
+
+  const fetchStats = async (tournamentId: string) => {
+    setLoading(true)
     const { data } = await supabase
       .from('player_stats')
       .select('*, player:players(*, team:teams(team_name))')
+      .eq('tournament_id', tournamentId)
       .order('runs', { ascending: false })
-    if (data) setStats(data as StatsWithPlayer[])
+    if (data) {
+      setStats(data as StatsWithPlayer[])
+    } else {
+      setStats([])
+    }
     setLoading(false)
+    setTournamentsLoading(false)
   }
 
   const searchFilter = (s: StatsWithPlayer) =>
@@ -43,11 +75,64 @@ export function StatsPage() {
   const eco = (runs: number, overs: number) => overs > 0 ? (runs / overs).toFixed(2) : '0.00'
   const avg = (runs: number, matches: number) => matches > 0 ? (runs / matches).toFixed(1) : '0.0'
 
+  if (tournamentsLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Player Statistics</h1>
+          <p className="text-muted-foreground text-sm mt-1">Leaderboards, batting, bowling & fielding stats</p>
+        </div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-16 rounded-xl bg-muted" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-28 rounded-lg bg-muted" />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (tournaments.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Player Statistics</h1>
+          <p className="text-muted-foreground text-sm mt-1">Leaderboards, batting, bowling & fielding stats</p>
+        </div>
+        <Card>
+          <CardContent className="py-16 text-center">
+            <Trophy className="size-12 text-muted-foreground/40 mx-auto mb-4" />
+            <h3 className="font-semibold mb-1 text-lg">No tournaments yet</h3>
+            <p className="text-sm text-muted-foreground">Stats will appear once tournaments are created and matches are played.</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Player Statistics</h1>
-        <p className="text-muted-foreground text-sm mt-1">Leaderboards, batting, bowling & fielding stats</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Player Statistics</h1>
+          <p className="text-muted-foreground text-sm mt-1">Leaderboards, batting, bowling & fielding stats</p>
+        </div>
+        <div className="w-full md:w-64">
+          <Select value={selectedTournamentId} onValueChange={setSelectedTournamentId}>
+            <SelectTrigger className="w-full bg-background">
+              <SelectValue placeholder="Select tournament" />
+            </SelectTrigger>
+            <SelectContent>
+              {tournaments.map((t) => (
+                <SelectItem key={t.id} value={t.id}>
+                  {t.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Leaderboard cards */}

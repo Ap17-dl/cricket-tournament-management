@@ -5,6 +5,7 @@ logs
 node_modules
 *.md
 *.local
+.env*
 
 dist
 public

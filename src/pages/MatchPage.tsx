@@ -282,7 +282,7 @@ export function MatchPage() {
   const [xiTeamId, setXITeamId] = useState<string>('')
   const [xiPlayerIds, setXIPlayerIds] = useState<string[]>([])
 
-  const isOrganizer = match?.tournament?.organizer_id === profile?.id || profile?.role === 'organizer'
+  const isOrganizer = match?.tournament?.organizer_id === profile?.id
 
   const fetchMatch = useCallback(async () => {
     if (!matchId) return
