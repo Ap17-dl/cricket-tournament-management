@@ -227,16 +227,18 @@ export function HomePage() {
           { label: 'Teams', value: stats.teams, icon: Users, to: '/tournaments' },
           { label: 'Players', value: stats.players, icon: Activity, to: '/stats' },
         ].map(({ label, value, icon: Icon, to }) => (
-          <Link key={label} to={to} className="block group">
-            <Card className="transition-all duration-200 group-hover:shadow-lg group-hover:border-primary/30 group-hover:scale-[1.02] cursor-pointer">
-              <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Icon className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                  <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">{label}</span>
-                </div>
-                <p className="text-2xl font-bold tabular-nums">{value}</p>
-              </CardContent>
-            </Card>
+          <Link
+            key={label}
+            to={to}
+            className="block rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-lg hover:border-primary/40 transition-all duration-200 cursor-pointer"
+          >
+            <div className="px-6 pt-4 pb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Icon className="size-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">{label}</span>
+              </div>
+              <p className="text-2xl font-bold tabular-nums">{value}</p>
+            </div>
           </Link>
         ))}
       </div>
