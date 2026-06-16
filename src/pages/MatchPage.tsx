@@ -612,32 +612,202 @@ export function MatchPage() {
     fetchInnings()
   }
 
+  async function updatePlayerStats() {
+    if (!match) return
+    const tournamentId = match.tournament_id
+
+    // Fetch all ball events for this match across both innings
+    const { data: inningsData } = await supabase
+      .from('innings')
+      .select('*, ball_events(*)')
+      .eq('match_id', match.id)
+
+    if (!inningsData) return
+
+    // Collect all participating player IDs (batsmen + bowlers)
+    const playerMap: Record<string, {
+      runs: number; balls_faced: number; fours: number; sixes: number;
+      wickets: number; overs_balls: number; runs_conceded: number; maidens: number;
+      highest_score: number; out: boolean;
+    }> = {}
+
+    const ensurePlayer = (pid: string) => {
+      if (!playerMap[pid]) {
+        playerMap[pid] = {
+          runs: 0, balls_faced: 0, fours: 0, sixes: 0,
+          wickets: 0, overs_balls: 0, runs_conceded: 0, maidens: 0,
+          highest_score: 0, out: false,
+        }
+      }
+    }
+
+    // Per-innings batsman scores for highest score tracking
+    const batsmanInningsRuns: Record<string, number> = {}
+
+    for (const inn of inningsData) {
+      const balls = inn.ball_events || []
+
+      // Track per-over runs for maiden calculation
+      const bowlerOverRuns: Record<string, Record<number, number>> = {}
+
+      for (const b of balls) {
+        // Batting stats
+        if (b.batsman_id) {
+          ensurePlayer(b.batsman_id)
+          const bat = playerMap[b.batsman_id]
+          if (b.extra_type !== 'wide') bat.balls_faced++
+          if (b.extra_type === null || b.extra_type === 'no_ball') {
+            bat.runs += b.runs
+            if (!batsmanInningsRuns[b.batsman_id]) batsmanInningsRuns[b.batsman_id] = 0
+            batsmanInningsRuns[b.batsman_id] += b.runs
+            if (b.runs === 4) bat.fours++
+            if (b.runs === 6) bat.sixes++
+          }
+        }
+
+        // Bowling stats
+        if (b.bowler_id) {
+          ensurePlayer(b.bowler_id)
+          const bowl = playerMap[b.bowler_id]
+          if (!b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye') {
+            bowl.overs_balls++
+          }
+          const bowlerRunsConceded = (b.extra_type === 'bye' || b.extra_type === 'leg_bye')
+            ? 0 : (b.runs + b.extra_runs)
+          bowl.runs_conceded += bowlerRunsConceded
+          if (b.is_wicket && b.wicket_type !== 'run_out') bowl.wickets++
+
+          // Track over runs for maidens
+          if (!bowlerOverRuns[b.bowler_id]) bowlerOverRuns[b.bowler_id] = {}
+          if (!bowlerOverRuns[b.bowler_id][b.over_number]) bowlerOverRuns[b.bowler_id][b.over_number] = 0
+          bowlerOverRuns[b.bowler_id][b.over_number] += bowlerRunsConceded
+        }
+      }
+
+      // Calculate maidens
+      for (const [bowlerId, overs] of Object.entries(bowlerOverRuns)) {
+        ensurePlayer(bowlerId)
+        for (const runs of Object.values(overs)) {
+          if (runs === 0) playerMap[bowlerId].maidens++
+        }
+      }
+    }
+
+    // Update highest score
+    for (const [pid, runs] of Object.entries(batsmanInningsRuns)) {
+      if (playerMap[pid]) {
+        playerMap[pid].highest_score = Math.max(playerMap[pid].highest_score, runs)
+      }
+    }
+
+    // Upsert player_stats for each player
+    for (const [playerId, stats] of Object.entries(playerMap)) {
+      const oversFloat = Math.floor(stats.overs_balls / 6) + (stats.overs_balls % 6) / 10
+
+      // Check if entry exists
+      const { data: existing } = await supabase
+        .from('player_stats')
+        .select('*')
+        .eq('player_id', playerId)
+        .eq('tournament_id', tournamentId)
+        .single()
+
+      if (existing) {
+        // Update existing stats
+        await supabase.from('player_stats').update({
+          matches_played: existing.matches_played + 1,
+          runs: existing.runs + stats.runs,
+          balls_faced: existing.balls_faced + stats.balls_faced,
+          fours: existing.fours + stats.fours,
+          sixes: existing.sixes + stats.sixes,
+          fifties: existing.fifties + (stats.runs >= 50 && stats.runs < 100 ? 1 : 0),
+          centuries: existing.centuries + (stats.runs >= 100 ? 1 : 0),
+          highest_score: Math.max(existing.highest_score, stats.highest_score),
+          wickets: existing.wickets + stats.wickets,
+          overs_bowled: Number(existing.overs_bowled) + oversFloat,
+          runs_conceded: existing.runs_conceded + stats.runs_conceded,
+          maidens: existing.maidens + stats.maidens,
+        }).eq('id', existing.id)
+      } else {
+        // Insert new entry
+        await supabase.from('player_stats').insert({
+          player_id: playerId,
+          tournament_id: tournamentId,
+          matches_played: 1,
+          runs: stats.runs,
+          balls_faced: stats.balls_faced,
+          fours: stats.fours,
+          sixes: stats.sixes,
+          fifties: stats.runs >= 50 && stats.runs < 100 ? 1 : 0,
+          centuries: stats.runs >= 100 ? 1 : 0,
+          highest_score: stats.highest_score,
+          wickets: stats.wickets,
+          overs_bowled: oversFloat,
+          runs_conceded: stats.runs_conceded,
+          maidens: stats.maidens,
+        })
+      }
+    }
+  }
+
   async function endInnings() {
     if (!currentInnings || !match) return
+
+    // Capture the latest state of the current innings before marking it complete
+    const completedInnings = { ...currentInnings }
+
     await supabase.from('innings').update({ is_complete: true }).eq('id', currentInnings.id)
 
-    const innsCount = allInnings.length
-    if (innsCount < 2) {
-      const battingTeamId = innsCount === 0 || currentInnings.batting_team_id === match.batting_first_id
-        ? (match.team_a_id === currentInnings.batting_team_id ? match.team_b_id : match.team_a_id)
-        : currentInnings.batting_team_id
-      const bowlingTeamId = battingTeamId === match.team_a_id ? match.team_b_id : match.team_a_id
-      await startInnings(battingTeamId, bowlingTeamId, innsCount + 1)
+    // Determine if this is 1st or 2nd innings ending
+    const isFirstInnings = allInnings.length === 0 ||
+      (allInnings.length === 1 && allInnings[0].id === currentInnings.id)
+
+    if (isFirstInnings) {
+      // Start 2nd innings — the other team bats
+      const nextBattingTeamId = currentInnings.batting_team_id === match.team_a_id
+        ? match.team_b_id : match.team_a_id
+      const nextBowlingTeamId = currentInnings.batting_team_id
+      await startInnings(nextBattingTeamId, nextBowlingTeamId, 2)
     } else {
-      // Determine winner
-      const inns1 = allInnings[0]
-      const inns2 = allInnings[1]
-      let winnerId = null
-      if (inns1.total_runs > inns2.total_runs) winnerId = inns1.batting_team_id
-      else if (inns2.total_runs > inns1.total_runs) winnerId = inns2.batting_team_id
+      // 2nd innings ended — determine the winner
+      // Find the 1st innings data (the one that is NOT the current innings)
+      const firstInnings = allInnings.find((i) => i.id !== currentInnings.id) || allInnings[0]
+      const secondInnings = completedInnings
+
+      const firstInnsTeamId = firstInnings.batting_team_id
+      const secondInnsTeamId = secondInnings.batting_team_id
+      const firstInnsRuns = firstInnings.total_runs
+      const secondInnsRuns = secondInnings.total_runs
+
+      const teamA = (match as any).team_a
+      const teamB = (match as any).team_b
+      const getTeamName = (teamId: string) =>
+        teamId === teamA?.id ? teamA?.team_name : teamB?.team_name
+
+      let winnerId: string | null = null
+      let resultSummary = 'Match tied'
+
+      if (secondInnsRuns > firstInnsRuns) {
+        // Chasing team won
+        winnerId = secondInnsTeamId
+        const wicketsRemaining = 10 - secondInnings.wickets
+        resultSummary = `${getTeamName(winnerId)} won by ${wicketsRemaining} wicket${wicketsRemaining !== 1 ? 's' : ''}`
+      } else if (firstInnsRuns > secondInnsRuns) {
+        // Defending team won
+        winnerId = firstInnsTeamId
+        const runMargin = firstInnsRuns - secondInnsRuns
+        resultSummary = `${getTeamName(winnerId)} won by ${runMargin} run${runMargin !== 1 ? 's' : ''}`
+      }
 
       await supabase.from('matches').update({
         status: 'completed',
         winner_id: winnerId,
-        result_summary: winnerId
-          ? `${allPlayers.find((p) => p.team_id === winnerId)?.name || 'Team'} won`
-          : 'Match tied',
+        result_summary: resultSummary,
       }).eq('id', match.id)
+
+      // Update player statistics for this match
+      await updatePlayerStats()
+
       fetchMatch()
     }
     fetchInnings()

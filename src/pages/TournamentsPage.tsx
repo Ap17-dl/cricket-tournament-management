@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import type { Tournament, MatchFormat, MatchTheme } from '@/lib/types'
-import { Trophy, Plus, ChevronRight, Calendar, MapPin, Zap, Edit, Trash2 } from 'lucide-react'
+import { Trophy, Plus, ChevronRight, Calendar, MapPin, Zap, Edit, Trash2, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   AlertDialog,
@@ -40,13 +40,23 @@ export function TournamentsListPage() {
 
   useEffect(() => {
     fetchTournaments()
+
+    // Realtime subscription so deletions/updates propagate to all viewers
+    const channel = supabase
+      .channel('tournaments-list')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tournaments' }, () => {
+        fetchTournaments()
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [])
 
   const fetchTournaments = async () => {
     setLoading(true)
     const { data } = await supabase
       .from('tournaments')
-      .select('*')
+      .select('*, organizer:profiles!tournaments_organizer_id_fkey(name)')
       .order('created_at', { ascending: false })
     if (data) setTournaments(data as Tournament[])
     setLoading(false)
@@ -128,6 +138,12 @@ export function TournamentsListPage() {
                     <Trophy className="size-3" />
                     <span>{t.format}{t.overs ? ` · ${t.overs} overs` : ''}</span>
                   </div>
+                </div>
+
+                {/* Organizer name */}
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
+                  <User className="size-3" />
+                  <span className="truncate">by {(t as any).organizer?.name || 'Unknown'}</span>
                 </div>
 
                 <div className="flex gap-2">

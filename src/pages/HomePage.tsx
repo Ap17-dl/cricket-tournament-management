@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import type { Match, Tournament } from '@/lib/types'
-import { Trophy, Zap, Calendar, Users, Activity, ChevronRight } from 'lucide-react'
+import { Trophy, Zap, Calendar, Users, Activity, ChevronRight, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 function LiveMatchCard({ match }: { match: Match }) {
@@ -107,6 +107,10 @@ function TournamentCard({ tournament }: { tournament: Tournament }) {
               <span>{tournament.overs} overs</span>
             )}
           </div>
+          <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+            <User className="size-3" />
+            <span className="truncate">by {(tournament as any).organizer?.name || 'Unknown'}</span>
+          </div>
         </CardContent>
       </Card>
     </Link>
@@ -121,6 +125,16 @@ export function HomePage() {
 
   useEffect(() => {
     fetchData()
+
+    // Realtime subscription so tournament deletions propagate to dashboard
+    const channel = supabase
+      .channel('home-tournaments')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tournaments' }, () => {
+        fetchData()
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [])
 
   const fetchData = async () => {
@@ -137,7 +151,7 @@ export function HomePage() {
         .limit(6),
       supabase
         .from('tournaments')
-        .select('*')
+        .select('*, organizer:profiles!tournaments_organizer_id_fkey(name)')
         .order('created_at', { ascending: false })
         .limit(6),
       Promise.all([
