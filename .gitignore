@@ -6,6 +6,7 @@ node_modules
 *.md
 *.local
 .env*
+.vscode
 
 dist
 public
