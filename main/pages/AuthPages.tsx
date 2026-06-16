@@ -51,7 +51,7 @@ export function LoginPage() {
             <div className="size-10 rounded-full bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">C</span>
             </div>
-            <span className="text-2xl font-bold tracking-tight text-foreground">CricketPro</span>
+            <span className="text-2xl font-bold tracking-tight text-foreground">LocalCricket</span>
           </div>
           <p className="text-muted-foreground text-sm">Manage tournaments. Score matches. Track stats.</p>
         </div>
@@ -187,7 +187,7 @@ export function SignupPage() {
             <div className="size-10 rounded-full bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">C</span>
             </div>
-            <span className="text-2xl font-bold tracking-tight text-foreground">CricketPro</span>
+            <span className="text-2xl font-bold tracking-tight text-foreground">LocalCricket</span>
           </div>
           <p className="text-muted-foreground text-sm">Your all-in-one cricket tournament platform</p>
         </div>

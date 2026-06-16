@@ -193,7 +193,7 @@ export function HomePage() {
             Cricket Tournament Platform
           </Badge>
           <h1 className="text-3xl font-bold tracking-tight mb-2">
-            {profile ? `Welcome back, ${profile.name}` : 'Welcome to CricketPro'}
+            {profile ? `Welcome back, ${profile.name}` : 'Welcome to LocalCricket'}
           </h1>
           <p className="text-primary-foreground/80 text-sm max-w-md">
             Live scoring, tournament management, player analytics — all in one place.

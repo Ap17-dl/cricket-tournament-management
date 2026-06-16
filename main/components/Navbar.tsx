@@ -68,7 +68,7 @@ export function Navbar() {
           <div className="size-8 rounded-full bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-black text-sm">C</span>
           </div>
-          <span className="font-bold text-lg tracking-tight hidden sm:block">CricketPro</span>
+          <span className="font-bold text-lg tracking-tight hidden sm:block">LocalCricket</span>
         </Link>
 
         {/* Nav Links */}
