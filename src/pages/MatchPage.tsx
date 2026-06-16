@@ -420,8 +420,11 @@ export function MatchPage() {
     const isOversCompleted = newOvers >= match.overs
 
     // 3. Target chased check (only in 2nd innings)
-    const inns1 = allInnings[0]
-    const targetVal = inns1?.is_complete && !allInnings[1] ? inns1.total_runs + 1 : null
+    // Find the COMPLETED 1st innings (different from currentInnings)
+    const completedFirstInnings = allInnings.find(
+      (i) => i.id !== currentInnings.id && i.is_complete
+    )
+    const targetVal = completedFirstInnings ? completedFirstInnings.total_runs + 1 : null
     const isTargetChased = targetVal !== null && newTotalRuns >= targetVal
 
     if (isAllOut || isOversCompleted || isTargetChased) {
@@ -616,137 +619,148 @@ export function MatchPage() {
     if (!match) return
     const tournamentId = match.tournament_id
 
-    // Fetch all ball events for this match across both innings
-    const { data: inningsData } = await supabase
-      .from('innings')
-      .select('*, ball_events(*)')
-      .eq('match_id', match.id)
+    try {
+      // Fetch all ball events for this match across both innings
+      const { data: inningsData, error: inningsError } = await supabase
+        .from('innings')
+        .select('*, ball_events(*)')
+        .eq('match_id', match.id)
 
-    if (!inningsData) return
+      if (inningsError || !inningsData) {
+        console.error('Failed to fetch innings for stats:', inningsError?.message)
+        return
+      }
 
-    // Collect all participating player IDs (batsmen + bowlers)
-    const playerMap: Record<string, {
-      runs: number; balls_faced: number; fours: number; sixes: number;
-      wickets: number; overs_balls: number; runs_conceded: number; maidens: number;
-      highest_score: number; out: boolean;
-    }> = {}
+      // Collect all participating player IDs (batsmen + bowlers)
+      const playerMap: Record<string, {
+        runs: number; balls_faced: number; fours: number; sixes: number;
+        wickets: number; overs_balls: number; runs_conceded: number; maidens: number;
+        highest_score: number;
+      }> = {}
 
-    const ensurePlayer = (pid: string) => {
-      if (!playerMap[pid]) {
-        playerMap[pid] = {
-          runs: 0, balls_faced: 0, fours: 0, sixes: 0,
-          wickets: 0, overs_balls: 0, runs_conceded: 0, maidens: 0,
-          highest_score: 0, out: false,
+      const ensurePlayer = (pid: string) => {
+        if (!playerMap[pid]) {
+          playerMap[pid] = {
+            runs: 0, balls_faced: 0, fours: 0, sixes: 0,
+            wickets: 0, overs_balls: 0, runs_conceded: 0, maidens: 0,
+            highest_score: 0,
+          }
         }
       }
-    }
 
-    // Per-innings batsman scores for highest score tracking
-    const batsmanInningsRuns: Record<string, number> = {}
+      // Per-innings batsman scores for highest score tracking
+      const batsmanInningsRuns: Record<string, number> = {}
 
-    for (const inn of inningsData) {
-      const balls = inn.ball_events || []
+      for (const inn of inningsData) {
+        const balls = inn.ball_events || []
 
-      // Track per-over runs for maiden calculation
-      const bowlerOverRuns: Record<string, Record<number, number>> = {}
+        // Track per-over runs for maiden calculation
+        const bowlerOverRuns: Record<string, Record<number, number>> = {}
 
-      for (const b of balls) {
-        // Batting stats
-        if (b.batsman_id) {
-          ensurePlayer(b.batsman_id)
-          const bat = playerMap[b.batsman_id]
-          if (b.extra_type !== 'wide') bat.balls_faced++
-          if (b.extra_type === null || b.extra_type === 'no_ball') {
-            bat.runs += b.runs
-            if (!batsmanInningsRuns[b.batsman_id]) batsmanInningsRuns[b.batsman_id] = 0
-            batsmanInningsRuns[b.batsman_id] += b.runs
-            if (b.runs === 4) bat.fours++
-            if (b.runs === 6) bat.sixes++
+        for (const b of balls) {
+          // Batting stats
+          if (b.batsman_id) {
+            ensurePlayer(b.batsman_id)
+            const bat = playerMap[b.batsman_id]
+            if (b.extra_type !== 'wide') bat.balls_faced++
+            if (!b.extra_type || b.extra_type === 'no_ball') {
+              bat.runs += b.runs
+              if (!batsmanInningsRuns[b.batsman_id]) batsmanInningsRuns[b.batsman_id] = 0
+              batsmanInningsRuns[b.batsman_id] += b.runs
+              if (b.runs === 4) bat.fours++
+              if (b.runs === 6) bat.sixes++
+            }
+          }
+
+          // Bowling stats
+          if (b.bowler_id) {
+            ensurePlayer(b.bowler_id)
+            const bowl = playerMap[b.bowler_id]
+            if (!b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye') {
+              bowl.overs_balls++
+            }
+            const bowlerRunsConceded = (b.extra_type === 'bye' || b.extra_type === 'leg_bye')
+              ? 0 : (b.runs + (b.extra_runs || 0))
+            bowl.runs_conceded += bowlerRunsConceded
+            if (b.is_wicket && b.wicket_type !== 'run_out') bowl.wickets++
+
+            // Track over runs for maidens
+            if (!bowlerOverRuns[b.bowler_id]) bowlerOverRuns[b.bowler_id] = {}
+            if (!bowlerOverRuns[b.bowler_id][b.over_number]) bowlerOverRuns[b.bowler_id][b.over_number] = 0
+            bowlerOverRuns[b.bowler_id][b.over_number] += bowlerRunsConceded
           }
         }
 
-        // Bowling stats
-        if (b.bowler_id) {
-          ensurePlayer(b.bowler_id)
-          const bowl = playerMap[b.bowler_id]
-          if (!b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye') {
-            bowl.overs_balls++
+        // Calculate maidens
+        for (const [bowlerId, overs] of Object.entries(bowlerOverRuns)) {
+          ensurePlayer(bowlerId)
+          for (const runs of Object.values(overs)) {
+            if (runs === 0) playerMap[bowlerId].maidens++
           }
-          const bowlerRunsConceded = (b.extra_type === 'bye' || b.extra_type === 'leg_bye')
-            ? 0 : (b.runs + b.extra_runs)
-          bowl.runs_conceded += bowlerRunsConceded
-          if (b.is_wicket && b.wicket_type !== 'run_out') bowl.wickets++
-
-          // Track over runs for maidens
-          if (!bowlerOverRuns[b.bowler_id]) bowlerOverRuns[b.bowler_id] = {}
-          if (!bowlerOverRuns[b.bowler_id][b.over_number]) bowlerOverRuns[b.bowler_id][b.over_number] = 0
-          bowlerOverRuns[b.bowler_id][b.over_number] += bowlerRunsConceded
         }
       }
 
-      // Calculate maidens
-      for (const [bowlerId, overs] of Object.entries(bowlerOverRuns)) {
-        ensurePlayer(bowlerId)
-        for (const runs of Object.values(overs)) {
-          if (runs === 0) playerMap[bowlerId].maidens++
+      // Update highest score
+      for (const [pid, runs] of Object.entries(batsmanInningsRuns)) {
+        if (playerMap[pid]) {
+          playerMap[pid].highest_score = Math.max(playerMap[pid].highest_score, runs)
         }
       }
-    }
 
-    // Update highest score
-    for (const [pid, runs] of Object.entries(batsmanInningsRuns)) {
-      if (playerMap[pid]) {
-        playerMap[pid].highest_score = Math.max(playerMap[pid].highest_score, runs)
+      // Upsert player_stats for each player
+      for (const [playerId, stats] of Object.entries(playerMap)) {
+        const oversFloat = Math.floor(stats.overs_balls / 6) + (stats.overs_balls % 6) / 10
+
+        // Check if entry exists — use maybeSingle to avoid error when no row found
+        const { data: existing } = await supabase
+          .from('player_stats')
+          .select('*')
+          .eq('player_id', playerId)
+          .eq('tournament_id', tournamentId)
+          .maybeSingle()
+
+        if (existing) {
+          // Update existing stats
+          const { error: updateErr } = await supabase.from('player_stats').update({
+            matches_played: existing.matches_played + 1,
+            runs: existing.runs + stats.runs,
+            balls_faced: existing.balls_faced + stats.balls_faced,
+            fours: existing.fours + stats.fours,
+            sixes: existing.sixes + stats.sixes,
+            fifties: existing.fifties + (stats.runs >= 50 && stats.runs < 100 ? 1 : 0),
+            centuries: existing.centuries + (stats.runs >= 100 ? 1 : 0),
+            highest_score: Math.max(existing.highest_score, stats.highest_score),
+            wickets: existing.wickets + stats.wickets,
+            overs_bowled: Number(existing.overs_bowled) + oversFloat,
+            runs_conceded: existing.runs_conceded + stats.runs_conceded,
+            maidens: existing.maidens + stats.maidens,
+          }).eq('id', existing.id)
+          if (updateErr) console.error(`Failed to update stats for ${playerId}:`, updateErr.message)
+        } else {
+          // Insert new entry
+          const { error: insertErr } = await supabase.from('player_stats').insert({
+            player_id: playerId,
+            tournament_id: tournamentId,
+            matches_played: 1,
+            runs: stats.runs,
+            balls_faced: stats.balls_faced,
+            fours: stats.fours,
+            sixes: stats.sixes,
+            fifties: stats.runs >= 50 && stats.runs < 100 ? 1 : 0,
+            centuries: stats.runs >= 100 ? 1 : 0,
+            highest_score: stats.highest_score,
+            wickets: stats.wickets,
+            overs_bowled: oversFloat,
+            runs_conceded: stats.runs_conceded,
+            maidens: stats.maidens,
+          })
+          if (insertErr) console.error(`Failed to insert stats for ${playerId}:`, insertErr.message)
+        }
       }
-    }
 
-    // Upsert player_stats for each player
-    for (const [playerId, stats] of Object.entries(playerMap)) {
-      const oversFloat = Math.floor(stats.overs_balls / 6) + (stats.overs_balls % 6) / 10
-
-      // Check if entry exists
-      const { data: existing } = await supabase
-        .from('player_stats')
-        .select('*')
-        .eq('player_id', playerId)
-        .eq('tournament_id', tournamentId)
-        .single()
-
-      if (existing) {
-        // Update existing stats
-        await supabase.from('player_stats').update({
-          matches_played: existing.matches_played + 1,
-          runs: existing.runs + stats.runs,
-          balls_faced: existing.balls_faced + stats.balls_faced,
-          fours: existing.fours + stats.fours,
-          sixes: existing.sixes + stats.sixes,
-          fifties: existing.fifties + (stats.runs >= 50 && stats.runs < 100 ? 1 : 0),
-          centuries: existing.centuries + (stats.runs >= 100 ? 1 : 0),
-          highest_score: Math.max(existing.highest_score, stats.highest_score),
-          wickets: existing.wickets + stats.wickets,
-          overs_bowled: Number(existing.overs_bowled) + oversFloat,
-          runs_conceded: existing.runs_conceded + stats.runs_conceded,
-          maidens: existing.maidens + stats.maidens,
-        }).eq('id', existing.id)
-      } else {
-        // Insert new entry
-        await supabase.from('player_stats').insert({
-          player_id: playerId,
-          tournament_id: tournamentId,
-          matches_played: 1,
-          runs: stats.runs,
-          balls_faced: stats.balls_faced,
-          fours: stats.fours,
-          sixes: stats.sixes,
-          fifties: stats.runs >= 50 && stats.runs < 100 ? 1 : 0,
-          centuries: stats.runs >= 100 ? 1 : 0,
-          highest_score: stats.highest_score,
-          wickets: stats.wickets,
-          overs_bowled: oversFloat,
-          runs_conceded: stats.runs_conceded,
-          maidens: stats.maidens,
-        })
-      }
+      console.log('Player stats updated successfully for match', match.id)
+    } catch (err) {
+      console.error('Error updating player stats:', err)
     }
   }
 
@@ -901,10 +915,10 @@ export function MatchPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Innings 1 */}
+            {/* Team A */}
             <div className={cn(
               'rounded-lg p-3',
-              inns1?.batting_team_id === teamA?.id ? 'bg-primary-foreground/10' : 'bg-transparent'
+              currentInnings?.batting_team_id === teamA?.id ? 'bg-primary-foreground/15' : 'bg-transparent'
             )}>
               <p className="text-primary-foreground/80 text-xs font-medium mb-1">{teamA?.team_name}</p>
               {inns1 ? (
@@ -927,7 +941,7 @@ export function MatchPage() {
 
             <div className={cn(
               'rounded-lg p-3',
-              inns1?.batting_team_id === teamB?.id ? 'bg-primary-foreground/10' : 'bg-transparent'
+              currentInnings?.batting_team_id === teamB?.id ? 'bg-primary-foreground/15' : 'bg-transparent'
             )}>
               <p className="text-primary-foreground/80 text-xs font-medium mb-1">{teamB?.team_name}</p>
               {inns1 ? (

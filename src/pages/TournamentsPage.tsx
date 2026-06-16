@@ -56,15 +56,30 @@ export function TournamentsListPage() {
     setLoading(true)
     const { data } = await supabase
       .from('tournaments')
-      .select('*, organizer:profiles!tournaments_organizer_id_fkey(name)')
+      .select('*')
       .order('created_at', { ascending: false })
-    if (data) setTournaments(data as Tournament[])
+    if (data) {
+      // Fetch organizer names separately
+      const organizerIds = [...new Set(data.map((t: any) => t.organizer_id))]
+      const { data: organizers } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .in('id', organizerIds)
+      const orgMap: Record<string, string> = {}
+      if (organizers) organizers.forEach((o: any) => { orgMap[o.id] = o.name })
+      const enriched = data.map((t: any) => ({ ...t, organizer: { name: orgMap[t.organizer_id] || 'Unknown' } }))
+      setTournaments(enriched as Tournament[])
+    }
     setLoading(false)
   }
 
   const handleDelete = async (id: string) => {
-    await supabase.from('tournaments').delete().eq('id', id)
-    setTournaments((prev) => prev.filter((t) => t.id !== id))
+    const { error } = await supabase.from('tournaments').delete().eq('id', id).eq('organizer_id', profile?.id || '')
+    if (!error) {
+      setTournaments((prev) => prev.filter((t) => t.id !== id))
+    } else {
+      console.error('Failed to delete tournament:', error.message)
+    }
   }
 
   const statusColors: Record<string, string> = {

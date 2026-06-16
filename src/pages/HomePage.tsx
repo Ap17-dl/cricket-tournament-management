@@ -151,7 +151,7 @@ export function HomePage() {
         .limit(6),
       supabase
         .from('tournaments')
-        .select('*, organizer:profiles!tournaments_organizer_id_fkey(name)')
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(6),
       Promise.all([
@@ -163,7 +163,18 @@ export function HomePage() {
     ])
 
     if (liveRes.data) setLiveMatches(liveRes.data as Match[])
-    if (tourRes.data) setRecentTournaments(tourRes.data as Tournament[])
+    if (tourRes.data) {
+      // Fetch organizer names separately
+      const organizerIds = [...new Set(tourRes.data.map((t: any) => t.organizer_id))]
+      const { data: organizers } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .in('id', organizerIds)
+      const orgMap: Record<string, string> = {}
+      if (organizers) organizers.forEach((o: any) => { orgMap[o.id] = o.name })
+      const enriched = tourRes.data.map((t: any) => ({ ...t, organizer: { name: orgMap[t.organizer_id] || 'Unknown' } }))
+      setRecentTournaments(enriched as Tournament[])
+    }
     const [t, m, teams, p] = statsRes
     setStats({
       tournaments: t.count ?? 0,
