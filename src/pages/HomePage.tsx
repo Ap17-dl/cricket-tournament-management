@@ -222,20 +222,22 @@ export function HomePage() {
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Tournaments', value: stats.tournaments, icon: Trophy },
-          { label: 'Matches', value: stats.matches, icon: Calendar },
-          { label: 'Teams', value: stats.teams, icon: Users },
-          { label: 'Players', value: stats.players, icon: Activity },
-        ].map(({ label, value, icon: Icon }) => (
-          <Card key={label}>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Icon className="size-4 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">{label}</span>
-              </div>
-              <p className="text-2xl font-bold tabular-nums">{value}</p>
-            </CardContent>
-          </Card>
+          { label: 'Tournaments', value: stats.tournaments, icon: Trophy, to: '/tournaments' },
+          { label: 'Matches', value: stats.matches, icon: Calendar, to: '/matches' },
+          { label: 'Teams', value: stats.teams, icon: Users, to: '/tournaments' },
+          { label: 'Players', value: stats.players, icon: Activity, to: '/stats' },
+        ].map(({ label, value, icon: Icon, to }) => (
+          <Link key={label} to={to} className="block group">
+            <Card className="transition-all duration-200 group-hover:shadow-lg group-hover:border-primary/30 group-hover:scale-[1.02] cursor-pointer">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">{label}</span>
+                </div>
+                <p className="text-2xl font-bold tabular-nums">{value}</p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
