@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/auth'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -456,6 +456,275 @@ export function CreateTournamentPage() {
             {loading ? 'Creating...' : 'Create Tournament'}
           </Button>
           <Button type="button" variant="outline" onClick={() => navigate('/tournaments')}>
+            Cancel
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+export function EditTournamentPage() {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { profile } = useAuthStore()
+  const [form, setForm] = useState<TournamentFormData>({
+    name: '',
+    venue: '',
+    start_date: '',
+    end_date: '',
+    format: 'T20',
+    overs: '20',
+    prize_pool: '',
+    rules: '',
+  })
+  const [status, setStatus] = useState<'upcoming' | 'active' | 'completed'>('upcoming')
+  const [loading, setLoading] = useState(false)
+  const [fetching, setFetching] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchTournament()
+  }, [id])
+
+  const fetchTournament = async () => {
+    if (!id) return
+    const { data } = await supabase.from('tournaments').select('*').eq('id', id).single()
+    if (data) {
+      setForm({
+        name: data.name || '',
+        venue: data.venue || '',
+        start_date: data.start_date ? data.start_date.split('T')[0] : '',
+        end_date: data.end_date ? data.end_date.split('T')[0] : '',
+        format: data.format,
+        overs: data.overs?.toString() || '',
+        prize_pool: data.prize_pool || '',
+        rules: data.rules || '',
+      })
+      setStatus(data.status)
+    }
+    setFetching(false)
+  }
+
+  const theme: MatchTheme = form.format === 'Test Match' ? 'test' : 'default'
+
+  const handleFormatChange = (fmt: MatchFormat) => {
+    setForm((prev) => ({
+      ...prev,
+      format: fmt,
+      overs: fmt === 'Test Match' ? '' : String(formatDefaultOvers[fmt]),
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!profile || !id) return
+    setError('')
+    setLoading(true)
+
+    const { error: err } = await supabase.from('tournaments').update({
+      name: form.name,
+      venue: form.venue || null,
+      start_date: form.start_date || null,
+      end_date: form.end_date || null,
+      format: form.format,
+      overs: form.overs ? parseInt(form.overs) : null,
+      theme,
+      prize_pool: form.prize_pool || null,
+      rules: form.rules || null,
+      status,
+    }).eq('id', id).eq('organizer_id', profile.id)
+
+    if (err) {
+      setError(err.message)
+      setLoading(false)
+    } else {
+      navigate(`/tournaments/${id}`)
+    }
+  }
+
+  if (fetching) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-4 animate-pulse">
+        <div className="h-8 rounded bg-muted w-48" />
+        <div className="h-64 rounded-lg bg-muted" />
+      </div>
+    )
+  }
+
+  if (profile?.role !== 'organizer') {
+    return (
+      <div className="text-center py-16">
+        <p className="text-muted-foreground">Only organizers can edit tournaments.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Edit Tournament</h1>
+        <p className="text-muted-foreground text-sm mt-1">Update tournament settings and rules</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Tournament Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Tournament name *</Label>
+              <Input
+                id="name"
+                placeholder="e.g. Premier T20 League 2025"
+                value={form.name}
+                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="venue">Venue</Label>
+              <Input
+                id="venue"
+                placeholder="e.g. Municipal Cricket Ground"
+                value={form.venue}
+                onChange={(e) => setForm((p) => ({ ...p, venue: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="start_date">Start date</Label>
+                <Input
+                  id="start_date"
+                  type="date"
+                  value={form.start_date}
+                  onChange={(e) => setForm((p) => ({ ...p, start_date: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="end_date">End date</Label>
+                <Input
+                  id="end_date"
+                  type="date"
+                  value={form.end_date}
+                  onChange={(e) => setForm((p) => ({ ...p, end_date: e.target.value }))}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Match Format</CardTitle>
+            <CardDescription>
+              Selecting "Test Match" applies the classic dark green + red theme.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              {FORMAT_OPTIONS.map((fmt) => (
+                <button
+                  key={fmt}
+                  type="button"
+                  onClick={() => handleFormatChange(fmt)}
+                  className={cn(
+                    'rounded-lg border p-3 text-sm font-medium transition-all text-center',
+                    form.format === fmt
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border hover:border-primary/50 hover:bg-accent'
+                  )}
+                >
+                  {fmt}
+                </button>
+              ))}
+            </div>
+
+            {form.format !== 'Test Match' && (
+              <div className="space-y-2">
+                <Label htmlFor="overs">Overs per innings</Label>
+                <Input
+                  id="overs"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={form.overs}
+                  onChange={(e) => setForm((p) => ({ ...p, overs: e.target.value }))}
+                />
+              </div>
+            )}
+
+            {theme === 'test' && (
+              <div className="rounded-lg bg-cricket-red/10 border border-cricket-red/20 p-3">
+                <p className="text-xs text-cricket-red font-medium">
+                  Test Match theme active — Deep Green + Red + White palette will be applied to this tournament.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Tournament Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-2">
+              {(['upcoming', 'active', 'completed'] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStatus(s)}
+                  className={cn(
+                    'rounded-lg border p-3 text-sm font-medium transition-all text-center capitalize',
+                    status === s
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border hover:border-primary/50 hover:bg-accent'
+                  )}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Additional Info</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="prize_pool">Prize pool</Label>
+              <Input
+                id="prize_pool"
+                placeholder="e.g. ₹50,000"
+                value={form.prize_pool}
+                onChange={(e) => setForm((p) => ({ ...p, prize_pool: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rules">Tournament rules</Label>
+              <Textarea
+                id="rules"
+                placeholder="Enter tournament rules and regulations..."
+                value={form.rules}
+                onChange={(e) => setForm((p) => ({ ...p, rules: e.target.value }))}
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <div className="flex gap-3">
+          <Button type="submit" disabled={loading} className="gap-1.5">
+            <Edit className="size-4" />
+            {loading ? 'Saving...' : 'Save Changes'}
+          </Button>
+          <Button type="button" variant="outline" onClick={() => navigate(`/tournaments/${id}`)}>
             Cancel
           </Button>
         </div>

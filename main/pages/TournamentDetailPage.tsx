@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import type { Tournament, Team, Player, Match, PointsTableEntry, PlayerRole, BattingStyle } from '@/lib/types'
 import {
   Trophy, Plus, Users, Calendar, MapPin, Edit, Trash2,
-  ChevronRight, Target, BarChart3, Crown, Medal
+  ChevronRight, Target, BarChart3, Crown, Medal, Pencil
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -825,6 +825,39 @@ export function TeamPlayersPage() {
     setPlayers((prev) => prev.filter((p) => p.id !== playerId))
   }
 
+  const [editOpen, setEditOpen] = useState(false)
+  const [editForm, setEditForm] = useState<{
+    id: string; name: string; jersey_number: string; role: PlayerRole;
+    batting_style: BattingStyle; bowling_style: string;
+  }>({ id: '', name: '', jersey_number: '', role: 'Batsman', batting_style: 'Right-handed', bowling_style: '' })
+
+  const startEditPlayer = (player: Player) => {
+    setEditForm({
+      id: player.id,
+      name: player.name,
+      jersey_number: player.jersey_number?.toString() || '',
+      role: player.role,
+      batting_style: player.batting_style,
+      bowling_style: player.bowling_style || '',
+    })
+    setEditOpen(true)
+  }
+
+  const savePlayerDetails = async () => {
+    const trimmed = editForm.name.trim()
+    if (!trimmed) return
+    const updates: Partial<Player> = {
+      name: trimmed,
+      jersey_number: editForm.jersey_number ? parseInt(editForm.jersey_number) : undefined,
+      role: editForm.role,
+      batting_style: editForm.batting_style,
+      bowling_style: editForm.bowling_style || undefined,
+    }
+    await supabase.from('players').update(updates).eq('id', editForm.id)
+    setPlayers((prev) => prev.map((p) => p.id === editForm.id ? { ...p, ...updates } : p))
+    setEditOpen(false)
+  }
+
   const isOrganizer = profile?.id === tournament?.organizer_id
 
   const roleColors: Record<PlayerRole, string> = {
@@ -935,7 +968,14 @@ export function TeamPlayersPage() {
                       )}
                     </div>
                     <div>
-                      <p className="font-semibold text-sm">{player.name}</p>
+                      <div className="flex items-center gap-1">
+                        <p className="font-semibold text-sm">{player.name}</p>
+                        {isOrganizer && (
+                          <Button variant="ghost" size="icon" className="size-5" onClick={() => startEditPlayer(player)}>
+                            <Pencil className="size-3 text-muted-foreground hover:text-foreground" />
+                          </Button>
+                        )}
+                      </div>
                       <Badge className={cn('text-xs mt-0.5', roleColors[player.role])}>
                         {player.role}
                       </Badge>
@@ -982,6 +1022,70 @@ export function TeamPlayersPage() {
             {isOrganizer && <p className="text-xs text-muted-foreground mt-1">Add players to build your squad.</p>}
           </CardContent>
         </Card>
+      )}
+      {/* Edit Player Dialog */}
+      {isOrganizer && (
+        <Dialog open={editOpen} onOpenChange={setEditOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Player</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 space-y-2">
+                  <Label>Player name *</Label>
+                  <Input
+                    placeholder="Full name"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Jersey number</Label>
+                  <Input
+                    type="number"
+                    placeholder="#"
+                    value={editForm.jersey_number}
+                    onChange={(e) => setEditForm((p) => ({ ...p, jersey_number: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Role</Label>
+                  <Select value={editForm.role} onValueChange={(v) => setEditForm((p) => ({ ...p, role: v as PlayerRole }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {['Batsman', 'Bowler', 'All-rounder', 'Wicket-keeper'].map((r) => (
+                        <SelectItem key={r} value={r}>{r}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Batting style</Label>
+                  <Select value={editForm.batting_style} onValueChange={(v) => setEditForm((p) => ({ ...p, batting_style: v as BattingStyle }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Right-handed">Right-handed</SelectItem>
+                      <SelectItem value="Left-handed">Left-handed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Bowling style</Label>
+                  <Input
+                    placeholder="e.g. Right-arm fast"
+                    value={editForm.bowling_style}
+                    onChange={(e) => setEditForm((p) => ({ ...p, bowling_style: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
+              <Button onClick={savePlayerDetails} disabled={!editForm.name.trim()}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   )

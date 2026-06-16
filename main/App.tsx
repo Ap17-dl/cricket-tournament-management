@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/auth'
 import { Layout } from '@/components/Layout'
 import { LoginPage, SignupPage } from '@/pages/AuthPages'
 import { HomePage } from '@/pages/HomePage'
-import { TournamentsListPage, CreateTournamentPage } from '@/pages/TournamentsPage'
+import { TournamentsListPage, CreateTournamentPage, EditTournamentPage } from '@/pages/TournamentsPage'
 import { TournamentDetailPage, TeamPlayersPage } from '@/pages/TournamentDetailPage'
 import { MatchPage } from '@/pages/MatchPage'
 import { MatchesListPage } from '@/pages/MatchesListPage'
@@ -58,6 +58,7 @@ export function App() {
             <Route path="/tournaments" element={<TournamentsListPage />} />
             <Route path="/tournaments/new" element={<CreateTournamentPage />} />
             <Route path="/tournaments/:id" element={<TournamentDetailPage />} />
+            <Route path="/tournaments/:id/edit" element={<EditTournamentPage />} />
             <Route path="/tournaments/:id/teams/:teamId" element={<TeamPlayersPage />} />
             <Route path="/matches" element={<MatchesListPage />} />
             <Route path="/matches/:id" element={<MatchPage />} />
