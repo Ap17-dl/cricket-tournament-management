@@ -49,7 +49,7 @@ export function StatsPage() {
     setLoading(true)
 
     // Compute stats directly from ball_events for all matches in this tournament
-    const { data: matches, error: mErr } = await supabase
+    const { data: matches } = await supabase
       .from('matches')
       .select('id, status')
       .eq('tournament_id', tournamentId)
@@ -64,7 +64,7 @@ export function StatsPage() {
     const matchIds = matches.map((m) => m.id)
 
     // Fetch all innings + ball events for these matches
-    const { data: inningsData, error: iErr } = await supabase
+    const { data: inningsData } = await supabase
       .from('innings')
       .select('*, ball_events(*)')
       .in('match_id', matchIds)
