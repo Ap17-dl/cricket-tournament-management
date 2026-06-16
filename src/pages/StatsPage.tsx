@@ -29,7 +29,7 @@ export function StatsPage() {
     const { data } = await supabase
       .from('tournaments')
       .select('*')
-      .order('name', { ascending: true })
+      .order('created_at', { ascending: false })
     if (data && data.length > 0) {
       setTournaments(data as Tournament[])
       setSelectedTournamentId(data[0].id)
@@ -47,16 +47,150 @@ export function StatsPage() {
 
   const fetchStats = async (tournamentId: string) => {
     setLoading(true)
-    const { data } = await supabase
-      .from('player_stats')
-      .select('*, player:players(*, team:teams(team_name))')
+
+    // Compute stats directly from ball_events for all matches in this tournament
+    const { data: matches, error: mErr } = await supabase
+      .from('matches')
+      .select('id, status')
       .eq('tournament_id', tournamentId)
-      .order('runs', { ascending: false })
-    if (data) {
-      setStats(data as StatsWithPlayer[])
-    } else {
+
+    if (!matches || matches.length === 0) {
       setStats([])
+      setLoading(false)
+      setTournamentsLoading(false)
+      return
     }
+
+    const matchIds = matches.map((m) => m.id)
+
+    // Fetch all innings + ball events for these matches
+    const { data: inningsData, error: iErr } = await supabase
+      .from('innings')
+      .select('*, ball_events(*)')
+      .in('match_id', matchIds)
+
+    if (!inningsData || inningsData.length === 0) {
+      setStats([])
+      setLoading(false)
+      setTournamentsLoading(false)
+      return
+    }
+
+    // Aggregate stats per player
+    const playerMap: Record<string, {
+      runs: number; balls_faced: number; fours: number; sixes: number;
+      wickets: number; overs_balls: number; runs_conceded: number; maidens: number;
+      highest_score: number; matchIds: Set<string>;
+    }> = {}
+
+    const ensurePlayer = (pid: string) => {
+      if (!playerMap[pid]) {
+        playerMap[pid] = {
+          runs: 0, balls_faced: 0, fours: 0, sixes: 0,
+          wickets: 0, overs_balls: 0, runs_conceded: 0, maidens: 0,
+          highest_score: 0, matchIds: new Set(),
+        }
+      }
+    }
+
+    for (const inn of inningsData) {
+      const balls = inn.ball_events || []
+      const batsmanInningsRuns: Record<string, number> = {}
+      const bowlerOverRuns: Record<string, Record<number, number>> = {}
+
+      for (const b of balls) {
+        if (b.batsman_id) {
+          ensurePlayer(b.batsman_id)
+          const bat = playerMap[b.batsman_id]
+          bat.matchIds.add(inn.match_id)
+          if (b.extra_type !== 'wide') bat.balls_faced++
+          if (!b.extra_type || b.extra_type === 'no_ball') {
+            bat.runs += b.runs
+            if (!batsmanInningsRuns[b.batsman_id]) batsmanInningsRuns[b.batsman_id] = 0
+            batsmanInningsRuns[b.batsman_id] += b.runs
+            if (b.runs === 4) bat.fours++
+            if (b.runs === 6) bat.sixes++
+          }
+        }
+
+        if (b.bowler_id) {
+          ensurePlayer(b.bowler_id)
+          const bowl = playerMap[b.bowler_id]
+          bowl.matchIds.add(inn.match_id)
+          if (!b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye') {
+            bowl.overs_balls++
+          }
+          const conceded = (b.extra_type === 'bye' || b.extra_type === 'leg_bye')
+            ? 0 : (b.runs + (b.extra_runs || 0))
+          bowl.runs_conceded += conceded
+          if (b.is_wicket && b.wicket_type !== 'run_out') bowl.wickets++
+
+          if (!bowlerOverRuns[b.bowler_id]) bowlerOverRuns[b.bowler_id] = {}
+          if (!bowlerOverRuns[b.bowler_id][b.over_number]) bowlerOverRuns[b.bowler_id][b.over_number] = 0
+          bowlerOverRuns[b.bowler_id][b.over_number] += conceded
+        }
+      }
+
+      // Maidens
+      for (const [bowlerId, overs] of Object.entries(bowlerOverRuns)) {
+        ensurePlayer(bowlerId)
+        for (const runs of Object.values(overs)) {
+          if (runs === 0) playerMap[bowlerId].maidens++
+        }
+      }
+
+      // Highest score per innings
+      for (const [pid, runs] of Object.entries(batsmanInningsRuns)) {
+        if (playerMap[pid]) {
+          playerMap[pid].highest_score = Math.max(playerMap[pid].highest_score, runs)
+        }
+      }
+    }
+
+    // Fetch player details
+    const playerIds = Object.keys(playerMap)
+    if (playerIds.length === 0) {
+      setStats([])
+      setLoading(false)
+      setTournamentsLoading(false)
+      return
+    }
+
+    const { data: playersData } = await supabase
+      .from('players')
+      .select('*, team:teams(team_name)')
+      .in('id', playerIds)
+
+    const playersById: Record<string, any> = {}
+    if (playersData) playersData.forEach((p) => { playersById[p.id] = p })
+
+    // Build the stats array
+    const computed: StatsWithPlayer[] = playerIds
+      .filter((pid) => playersById[pid])
+      .map((pid) => {
+        const s = playerMap[pid]
+        const oversFloat = Math.floor(s.overs_balls / 6) + (s.overs_balls % 6) / 10
+        return {
+          id: pid,
+          player_id: pid,
+          tournament_id: tournamentId,
+          matches_played: s.matchIds.size,
+          runs: s.runs,
+          balls_faced: s.balls_faced,
+          fours: s.fours,
+          sixes: s.sixes,
+          fifties: 0,
+          centuries: 0,
+          highest_score: s.highest_score,
+          wickets: s.wickets,
+          overs_bowled: oversFloat,
+          runs_conceded: s.runs_conceded,
+          maidens: s.maidens,
+          player: playersById[pid],
+        } as StatsWithPlayer
+      })
+
+    setStats(computed)
     setLoading(false)
     setTournamentsLoading(false)
   }
@@ -127,7 +261,7 @@ export function StatsPage() {
             <SelectContent>
               {tournaments.map((t) => (
                 <SelectItem key={t.id} value={t.id}>
-                  {t.name}
+                  {t.name}{t.venue ? ` — ${t.venue}` : ''} ({t.format})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -298,6 +432,7 @@ export function StatsPage() {
           </TabsContent>
         </Tabs>
       )}
+
     </div>
   )
 }

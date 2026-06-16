@@ -74,11 +74,27 @@ export function TournamentsListPage() {
   }
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('tournaments').delete().eq('id', id).eq('organizer_id', profile?.id || '')
-    if (!error) {
-      setTournaments((prev) => prev.filter((t) => t.id !== id))
-    } else {
-      console.error('Failed to delete tournament:', error.message)
+    try {
+      // Must delete in correct order due to FK constraints:
+      // innings.batting_team_id/bowling_team_id -> teams (no CASCADE)
+      // So we delete matches first (cascades to innings -> ball_events, playing_xi)
+      // Then delete player_stats, then the tournament itself (cascades to teams -> players)
+
+      // 1. Delete all matches for this tournament (cascades to innings, ball_events, playing_xi)
+      await supabase.from('matches').delete().eq('tournament_id', id)
+
+      // 2. Delete player_stats for this tournament
+      await supabase.from('player_stats').delete().eq('tournament_id', id)
+
+      // 3. Now delete the tournament (cascades to teams -> players)
+      const { error } = await supabase.from('tournaments').delete().eq('id', id).eq('organizer_id', profile?.id || '')
+      if (!error) {
+        setTournaments((prev) => prev.filter((t) => t.id !== id))
+      } else {
+        console.error('Failed to delete tournament:', error.message)
+      }
+    } catch (err) {
+      console.error('Failed to delete tournament:', err)
     }
   }
 
