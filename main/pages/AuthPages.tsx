@@ -48,9 +48,7 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-2 mb-4">
-            <div className="size-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">C</span>
-            </div>
+            <img src="/logo.png" alt="LocalCricket Logo" className="size-10 object-contain" />
             <span className="text-2xl font-bold tracking-tight text-foreground">LocalCricket</span>
           </div>
           <p className="text-muted-foreground text-sm">Manage tournaments. Score matches. Track stats.</p>
@@ -184,9 +182,7 @@ export function SignupPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-2 mb-4">
-            <div className="size-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">C</span>
-            </div>
+            <img src="/logo.png" alt="LocalCricket Logo" className="size-10 object-contain" />
             <span className="text-2xl font-bold tracking-tight text-foreground">LocalCricket</span>
           </div>
           <p className="text-muted-foreground text-sm">Your all-in-one cricket tournament platform</p>

@@ -21,9 +21,7 @@ export function Layout() {
     return (
       <div className="min-h-svh flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
-          <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
-            <span className="text-primary font-black text-lg">C</span>
-          </div>
+          <img src="/logo.png" alt="Loading..." className="size-10 object-contain animate-pulse" />
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
