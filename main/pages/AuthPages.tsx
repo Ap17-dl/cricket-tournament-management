@@ -57,7 +57,7 @@ export function LoginPage() {
           </div>
           <p className="text-white/90 text-sm drop-shadow-sm font-medium">Manage tournaments. Score matches. Track stats.</p>
         </div>
-        <Card className="backdrop-blur-md bg-card/95">
+        <Card className="bg-white/60 dark:bg-black/65 backdrop-blur-xl border-white/40 dark:border-white/15 shadow-2xl">
           <CardHeader>
             <CardTitle className="text-xl">Welcome back</CardTitle>
             <CardDescription>Sign in to your account</CardDescription>
@@ -195,7 +195,7 @@ export function SignupPage() {
           </div>
           <p className="text-white/90 text-sm drop-shadow-sm font-medium">Your all-in-one cricket tournament platform</p>
         </div>
-        <Card className="backdrop-blur-md bg-card/95">
+        <Card className="bg-white/60 dark:bg-black/65 backdrop-blur-xl border-white/40 dark:border-white/15 shadow-2xl">
           <CardHeader>
             <CardTitle className="text-xl">Create account</CardTitle>
             <CardDescription>Choose your role to get started</CardDescription>
