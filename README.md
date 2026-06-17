@@ -122,7 +122,7 @@ Can:
 - Update live scores
 - Manage tournament operations
 
-### Viewer
+### Viewers
 
 Can:
 - Watch live matches
