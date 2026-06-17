@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/auth'
@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// ===================== OVER TRACKER =====================
+
 function OverTracker({ balls }: { balls: BallEvent[] }) {
   const getBallDisplay = (ball: BallEvent) => {
     if (ball.is_wicket) return { label: 'W', cls: 'bg-cricket-wicket text-white' }
@@ -30,11 +30,9 @@ function OverTracker({ balls }: { balls: BallEvent[] }) {
     return { label: String(ball.runs), cls: 'bg-secondary text-secondary-foreground' }
   }
 
-  // Legal balls (not wide/no-ball) count toward the 6-ball over
   const legalCount = balls.filter(
     (b) => !b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye'
   ).length
-  // Total slots = all delivered balls + remaining legal balls needed
   const totalSlots = balls.length + Math.max(0, 6 - legalCount)
 
   return (
@@ -102,13 +100,11 @@ function ScoringButton({
   )
 }
 
-// ===================== SCORECARD TAB =====================
 function ScorecardTab({ innings, players }: { innings: Innings | null; players: Player[] }) {
   if (!innings) return <div className="py-8 text-center text-sm text-muted-foreground">No innings data yet.</div>
 
   const balls = innings.ball_events || []
 
-  // Build batsmen performance
   const batsmenMap: Record<string, { runs: number; balls: number; fours: number; sixes: number; out: boolean; wicketType?: string }> = {}
   const bowlersMap: Record<string, { overs: number; balls: number; maidens: number; runs: number; wickets: number }> = {}
 
@@ -250,7 +246,6 @@ function ScorecardTab({ innings, players }: { innings: Innings | null; players: 
   )
 }
 
-// ===================== MATCH PAGE =====================
 export function MatchPage() {
   const { id: matchId } = useParams<{ id: string }>()
   const { profile } = useAuthStore()
@@ -281,6 +276,8 @@ export function MatchPage() {
   const [selectXIDialog, setSelectXIDialog] = useState(false)
   const [xiTeamId, setXITeamId] = useState<string>('')
   const [xiPlayerIds, setXIPlayerIds] = useState<string[]>([])
+  const scoringRef = useRef(false)
+  const restoredRef = useRef(false)
 
   const isOrganizer = match?.tournament?.organizer_id === profile?.id
 
@@ -317,16 +314,50 @@ export function MatchPage() {
       .order('innings_number')
 
     if (data) {
-      setAllInnings(data as Innings[])
-      const active = (data as Innings[]).find((i) => !i.is_complete) || data[data.length - 1]
+      // Recalculate stats for each innings to guarantee correctness
+      const updatedInningsList = (data as Innings[]).map((inn) => {
+        const balls = inn.ball_events || []
+        const totalRuns = balls.reduce((s, b) => s + b.runs + b.extra_runs, 0)
+        const wickets = balls.filter((b) => b.is_wicket).length
+        const extras = balls.reduce((s, b) => s + b.extra_runs, 0)
+        const legalBalls = balls.filter((b) => !b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye').length
+        const oversCompleted = Math.floor(legalBalls / 6) + (legalBalls % 6) / 10
+
+        const hasMismatch = 
+          inn.total_runs !== totalRuns || 
+          inn.wickets !== wickets || 
+          inn.extras !== extras || 
+          Number(inn.overs_completed) !== oversCompleted
+
+        if (hasMismatch && isOrganizer) {
+          // Sync database in background
+          supabase.from('innings').update({
+            total_runs: totalRuns,
+            wickets: wickets,
+            extras: extras,
+            overs_completed: oversCompleted
+          }).eq('id', inn.id).then(() => {})
+        }
+
+        return {
+          ...inn,
+          total_runs: totalRuns,
+          wickets: wickets,
+          extras: extras,
+          overs_completed: oversCompleted
+        }
+      })
+
+      setAllInnings(updatedInningsList)
+      const active = updatedInningsList.find((i) => !i.is_complete) || updatedInningsList[updatedInningsList.length - 1]
       if (active) {
-        setCurrentInnings(active as Innings)
-        const balls = (active as Innings).ball_events || []
+        setCurrentInnings(active)
+        const balls = active.ball_events || []
         const currentOver = active.overs_completed ? Math.floor(Number(active.overs_completed)) : 0
         setCurrentOverBalls(balls.filter((b) => b.over_number === currentOver))
       }
     }
-  }, [matchId])
+  }, [matchId, isOrganizer])
 
   const fetchPlayingXI = useCallback(async () => {
     if (!matchId) return
@@ -360,6 +391,90 @@ export function MatchPage() {
     }
   }, [fetchMatch, fetchInnings, fetchPlayingXI])
 
+  // Restore striker/non-striker/bowler when reopening a live match
+  useEffect(() => {
+    if (!matchId || !currentInnings || currentInnings.is_complete || loading) return
+    if (restoredRef.current) return
+    restoredRef.current = true
+
+    // Try localStorage first (most accurate — includes post-wicket new batsman)
+    const saved = localStorage.getItem(`match-scoring-${matchId}`)
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (parsed.inningsId === currentInnings.id) {
+          if (parsed.strikerId) setStrikerId(parsed.strikerId)
+          if (parsed.nonStrikerId) setNonStrikerId(parsed.nonStrikerId)
+          if (parsed.bowlerId) setBowlerId(parsed.bowlerId)
+          return
+        }
+      } catch { /* ignore parse errors */ }
+    }
+
+    // Fallback: derive from ball events
+    const balls = currentInnings.ball_events || []
+    if (balls.length === 0) return
+
+    // Find not-out batsmen
+    const outBatsmenIds = new Set<string>()
+    balls.forEach(b => { if (b.is_wicket && b.batsman_id) outBatsmenIds.add(b.batsman_id) })
+
+    const batsmenOrder: string[] = []
+    balls.forEach(b => {
+      if (b.batsman_id && !batsmenOrder.includes(b.batsman_id)) {
+        batsmenOrder.push(b.batsman_id)
+      }
+    })
+    const notOutBatsmen = batsmenOrder.filter(id => !outBatsmenIds.has(id))
+
+    if (notOutBatsmen.length >= 2) {
+      const lastBall = balls[balls.length - 1]
+      let derivedStriker: string | null = lastBall.batsman_id ?? null
+      let derivedNonStriker: string | null = notOutBatsmen.find(id => id !== derivedStriker) ?? null
+
+      // Account for strike rotation on odd runs
+      const runsToRotate = (lastBall.extra_type === 'bye' || lastBall.extra_type === 'leg_bye')
+        ? lastBall.extra_runs : lastBall.runs
+      if (runsToRotate % 2 !== 0) {
+        const tmp = derivedStriker
+        derivedStriker = derivedNonStriker
+        derivedNonStriker = tmp
+      }
+
+      // Account for end-of-over strike rotation
+      const lastOverBalls = balls.filter(b => b.over_number === lastBall.over_number)
+      const legalInLastOver = lastOverBalls.filter(
+        b => !b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye'
+      ).length
+      if (legalInLastOver >= 6) {
+        const tmp = derivedStriker
+        derivedStriker = derivedNonStriker
+        derivedNonStriker = tmp
+      }
+
+      if (derivedStriker) setStrikerId(derivedStriker)
+      if (derivedNonStriker) setNonStrikerId(derivedNonStriker)
+    } else if (notOutBatsmen.length === 1) {
+      setStrikerId(notOutBatsmen[0])
+    }
+
+    // Restore bowler from current over
+    const currentOver = Math.floor(Number(currentInnings.overs_completed))
+    const currentOverBallsList = balls.filter(b => b.over_number === currentOver)
+    if (currentOverBallsList.length > 0) {
+      setBowlerId(currentOverBallsList[0].bowler_id ?? null)
+    }
+  }, [matchId, currentInnings, loading])
+
+  // Persist player selections to localStorage for session recovery
+  useEffect(() => {
+    if (!matchId || !currentInnings) return
+    if (!strikerId && !nonStrikerId && !bowlerId) return
+    localStorage.setItem(`match-scoring-${matchId}`, JSON.stringify({
+      strikerId, nonStrikerId, bowlerId, inningsId: currentInnings.id
+    }))
+  }, [matchId, strikerId, nonStrikerId, bowlerId, currentInnings])
+
   const doToss = async () => {
     if (!match || !tossWinnerId) return
     const battingFirstId = tossDecision === 'bat' ? tossWinnerId : (tossWinnerId === match.team_a_id ? match.team_b_id : match.team_a_id)
@@ -386,6 +501,8 @@ export function MatchPage() {
       setNonStrikerId(null)
       setBowlerId(null)
       setCurrentOverBalls([])
+      restoredRef.current = true // Don't restore stale state for new innings
+      if (matchId) localStorage.removeItem(`match-scoring-${matchId}`)
       fetchInnings()
     }
   }
@@ -436,73 +553,82 @@ export function MatchPage() {
 
   async function recordBall(runs: number, extraType?: ExtraType, extraRuns = 0) {
     if (!currentInnings || !strikerId || !bowlerId) return
+    if (scoringRef.current) return // Prevent rapid double-tap race condition
+    scoringRef.current = true
 
-    const overNum = Math.floor(Number(currentInnings.overs_completed))
-    const ballNum = currentOverBalls.length + 1
+    try {
+      const overNum = Math.floor(Number(currentInnings.overs_completed))
+      const ballNum = currentOverBalls.length + 1
 
-    const { data: ball } = await supabase.from('ball_events').insert({
-      innings_id: currentInnings.id,
-      over_number: overNum,
-      ball_number: ballNum,
-      batsman_id: strikerId,
-      bowler_id: bowlerId,
-      runs,
-      extra_type: extraType || null,
-      extra_runs: extraRuns,
-      is_wicket: false,
-      commentary: buildCommentary(runs, extraType, extraRuns),
-    }).select().single()
+      const { data: ball } = await supabase.from('ball_events').insert({
+        innings_id: currentInnings.id,
+        over_number: overNum,
+        ball_number: ballNum,
+        batsman_id: strikerId,
+        bowler_id: bowlerId,
+        runs,
+        extra_type: extraType || null,
+        extra_runs: extraRuns,
+        is_wicket: false,
+        commentary: buildCommentary(runs, extraType, extraRuns),
+      }).select().single()
 
-    if (ball) {
-      const isLegalBall = !extraType || extraType === 'bye' || extraType === 'leg_bye'
-      const currentLegalBalls = Math.round((Number(currentInnings.overs_completed) % 1) * 10)
-      const newLegalBallsCount = isLegalBall ? currentLegalBalls + 1 : currentLegalBalls
-      const overCompleted = newLegalBallsCount >= 6
+      if (ball) {
+        const isLegalBall = !extraType || extraType === 'bye' || extraType === 'leg_bye'
+        // Derive legal ball count from local currentOverBalls to avoid stale overs_completed
+        const currentLegalBalls = currentOverBalls.filter(
+          (b) => !b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye'
+        ).length
+        const newLegalBallsCount = isLegalBall ? currentLegalBalls + 1 : currentLegalBalls
+        const overCompleted = newLegalBallsCount >= 6
 
-      const newTotalRuns = currentInnings.total_runs + runs + extraRuns
-      const newExtras = currentInnings.extras + extraRuns
-      let newOvers = currentInnings.overs_completed
+        const newTotalRuns = currentInnings.total_runs + runs + extraRuns
+        const newExtras = currentInnings.extras + extraRuns
+        let newOvers = currentInnings.overs_completed
 
-      if (isLegalBall) {
-        const oversInt = Math.floor(Number(currentInnings.overs_completed))
-        if (newLegalBallsCount >= 6) {
-          newOvers = oversInt + 1
-        } else {
-          newOvers = oversInt + newLegalBallsCount / 10
+        if (isLegalBall) {
+          const oversInt = Math.floor(Number(currentInnings.overs_completed))
+          if (newLegalBallsCount >= 6) {
+            newOvers = oversInt + 1
+          } else {
+            newOvers = oversInt + newLegalBallsCount / 10
+          }
         }
-      }
 
-      await supabase.from('innings').update({
-        total_runs: newTotalRuns,
-        extras: newExtras,
-        overs_completed: newOvers,
-      }).eq('id', currentInnings.id)
+        await supabase.from('innings').update({
+          total_runs: newTotalRuns,
+          extras: newExtras,
+          overs_completed: newOvers,
+        }).eq('id', currentInnings.id)
 
-      // Rotate strike on odd runs (runs off bat, or odd byes/leg_byes)
-      const runsToRotate = (extraType === 'bye' || extraType === 'leg_bye') ? extraRuns : runs
-      if (runsToRotate % 2 !== 0) {
-        const tmp = strikerId
-        setStrikerId(nonStrikerId)
-        setNonStrikerId(tmp)
-      }
-
-      // Check if innings completed automatically
-      const inningsEnded = await checkAndEndInnings(newOvers, currentInnings.wickets, newTotalRuns)
-
-      if (!inningsEnded) {
-        // End of over
-        if (overCompleted) {
+        // Rotate strike on odd runs (runs off bat, or odd byes/leg_byes)
+        const runsToRotate = (extraType === 'bye' || extraType === 'leg_bye') ? extraRuns : runs
+        if (runsToRotate % 2 !== 0) {
           const tmp = strikerId
           setStrikerId(nonStrikerId)
           setNonStrikerId(tmp)
-          setCurrentOverBalls([])
-          setSelectBowlerDialog(true)
-        } else {
-          setCurrentOverBalls((prev) => [...prev, ball as BallEvent])
         }
-      }
 
-      fetchInnings()
+        // Check if innings completed automatically
+        const inningsEnded = await checkAndEndInnings(newOvers, currentInnings.wickets, newTotalRuns)
+
+        if (!inningsEnded) {
+          // End of over
+          if (overCompleted) {
+            const tmp = strikerId
+            setStrikerId(nonStrikerId)
+            setNonStrikerId(tmp)
+            setCurrentOverBalls([])
+            setSelectBowlerDialog(true)
+          } else {
+            setCurrentOverBalls((prev) => [...prev, ball as BallEvent])
+          }
+        }
+
+        await fetchInnings()
+      }
+    } finally {
+      scoringRef.current = false
     }
   }
 
@@ -524,64 +650,73 @@ export function MatchPage() {
 
   async function recordWicket() {
     if (!currentInnings || !strikerId || !bowlerId) return
+    if (scoringRef.current) return // Prevent rapid double-tap race condition
+    scoringRef.current = true
 
-    const overNum = Math.floor(Number(currentInnings.overs_completed))
-    const ballNum = currentOverBalls.length + 1
+    try {
+      const overNum = Math.floor(Number(currentInnings.overs_completed))
+      const ballNum = currentOverBalls.length + 1
 
-    const { data: ball } = await supabase.from('ball_events').insert({
-      innings_id: currentInnings.id,
-      over_number: overNum,
-      ball_number: ballNum,
-      batsman_id: strikerId,
-      bowler_id: bowlerId,
-      runs: 0,
-      is_wicket: true,
-      wicket_type: wicketType,
-      fielder_id: fielderId || null,
-      commentary: `OUT! ${players(strikerId)?.name} - ${wicketType.replace('_', ' ')}`,
-    }).select().single()
+      const { data: ball } = await supabase.from('ball_events').insert({
+        innings_id: currentInnings.id,
+        over_number: overNum,
+        ball_number: ballNum,
+        batsman_id: strikerId,
+        bowler_id: bowlerId,
+        runs: 0,
+        is_wicket: true,
+        wicket_type: wicketType,
+        fielder_id: fielderId || null,
+        commentary: `OUT! ${players(strikerId)?.name} - ${wicketType.replace('_', ' ')}`,
+      }).select().single()
 
-    const newWickets = currentInnings.wickets + 1
-    const currentLegalBalls = Math.round((Number(currentInnings.overs_completed) % 1) * 10)
-    const newLegalBallsCount = currentLegalBalls + 1
-    const overCompleted = newLegalBallsCount >= 6
+      const newWickets = currentInnings.wickets + 1
+      // Derive legal ball count from local currentOverBalls to avoid stale state
+      const currentLegalBalls = currentOverBalls.filter(
+        (b) => !b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye'
+      ).length
+      const newLegalBallsCount = currentLegalBalls + 1
+      const overCompleted = newLegalBallsCount >= 6
 
-    const oversInt = Math.floor(Number(currentInnings.overs_completed))
-    const newOversFloat = overCompleted ? oversInt + 1 : oversInt + newLegalBallsCount / 10
+      const oversInt = Math.floor(Number(currentInnings.overs_completed))
+      const newOversFloat = overCompleted ? oversInt + 1 : oversInt + newLegalBallsCount / 10
 
-    await supabase.from('innings').update({
-      wickets: newWickets,
-      overs_completed: newOversFloat,
-    }).eq('id', currentInnings.id)
+      await supabase.from('innings').update({
+        wickets: newWickets,
+        overs_completed: newOversFloat,
+      }).eq('id', currentInnings.id)
 
-    setWicketDialog(false)
-    
-    let finalStrikerId = strikerId
-    if (newBatsmanId) {
-      finalStrikerId = newBatsmanId
-      setStrikerId(newBatsmanId)
-    }
-    setNewBatsmanId('')
-    setWicketType('bowled')
-    setFielderId('')
+      setWicketDialog(false)
+      
+      let finalStrikerId = strikerId
+      if (newBatsmanId) {
+        finalStrikerId = newBatsmanId
+        setStrikerId(newBatsmanId)
+      }
+      setNewBatsmanId('')
+      setWicketType('bowled')
+      setFielderId('')
 
-    // Check if innings completed automatically
-    const inningsEnded = await checkAndEndInnings(newOversFloat, newWickets, currentInnings.total_runs)
+      // Check if innings completed automatically
+      const inningsEnded = await checkAndEndInnings(newOversFloat, newWickets, currentInnings.total_runs)
 
-    if (!inningsEnded) {
-      if (overCompleted) {
-        setStrikerId(nonStrikerId)
-        setNonStrikerId(finalStrikerId)
-        setCurrentOverBalls([])
-        setSelectBowlerDialog(true)
-      } else {
-        if (ball) {
-          setCurrentOverBalls((prev) => [...prev, ball as BallEvent])
+      if (!inningsEnded) {
+        if (overCompleted) {
+          setStrikerId(nonStrikerId)
+          setNonStrikerId(finalStrikerId)
+          setCurrentOverBalls([])
+          setSelectBowlerDialog(true)
+        } else {
+          if (ball) {
+            setCurrentOverBalls((prev) => [...prev, ball as BallEvent])
+          }
         }
       }
-    }
 
-    fetchInnings()
+      await fetchInnings()
+    } finally {
+      scoringRef.current = false
+    }
   }
 
   async function undoLastBall() {
@@ -1101,12 +1236,23 @@ export function MatchPage() {
             {/* Bowler */}
             <div
               className={cn(
-                'rounded-lg p-2.5 cursor-pointer transition-colors',
+                'rounded-lg p-2.5 transition-colors',
+                isOrganizer && currentOverBalls.length === 0
+                  ? 'cursor-pointer hover:bg-muted/70'
+                  : 'cursor-not-allowed opacity-75',
                 bowlerId ? 'bg-muted/50' : 'bg-muted border border-dashed border-border'
               )}
-              onClick={() => isOrganizer && setSelectBowlerDialog(true)}
+              onClick={() => {
+                if (isOrganizer) {
+                  if (currentOverBalls.length > 0) return
+                  setSelectBowlerDialog(true)
+                }
+              }}
+              title={currentOverBalls.length > 0 ? 'Cannot change bowler mid-over' : undefined}
             >
-              <p className="text-xs text-muted-foreground mb-0.5">Bowler</p>
+              <p className="text-xs text-muted-foreground mb-0.5">
+                Bowler{currentOverBalls.length > 0 && <span className="text-[10px] text-orange-500 font-medium ml-1.5">(Locked mid-over)</span>}
+              </p>
               <p className="font-semibold text-sm">{bowlerPlayer?.name || 'Select bowler'}</p>
             </div>
           </CardContent>
@@ -1261,6 +1407,8 @@ export function MatchPage() {
                     size="sm"
                     className="gap-1"
                     onClick={() => setSelectBowlerDialog(true)}
+                    disabled={currentOverBalls.length > 0}
+                    title={currentOverBalls.length > 0 ? 'Cannot change bowler mid-over' : undefined}
                   >
                     <RotateCcw className="size-3.5" />
                     Bowler
