@@ -54,11 +54,11 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.99 0 0);
+  --background: oklch(0.96 0 0);
   --foreground: oklch(0.13 0 0);
-  --card: oklch(1 0 0);
+  --card: oklch(0.98 0 0);
   --card-foreground: oklch(0.13 0 0);
-  --popover: oklch(1 0 0);
+  --popover: oklch(0.98 0 0);
   --popover-foreground: oklch(0.13 0 0);
   --primary: oklch(0.45 0.15 145);
   --primary-foreground: oklch(0.99 0 0);
@@ -167,4 +167,77 @@
 
 .live-indicator {
   animation: live-pulse 1.5s ease-in-out infinite;
+}
+
+/* Skeuomorphic Utilities */
+@layer utilities {
+  .shadow-skeuo {
+    box-shadow: 
+      4px 4px 10px rgba(0, 0, 0, 0.06),
+      -4px -4px 10px rgba(255, 255, 255, 0.8),
+      inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  }
+
+  .shadow-skeuo-sm {
+    box-shadow: 
+      2px 2px 5px rgba(0, 0, 0, 0.06),
+      -2px -2px 5px rgba(255, 255, 255, 0.8),
+      inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  }
+
+  .shadow-skeuo-inner {
+    box-shadow: 
+      inset 4px 4px 8px rgba(0, 0, 0, 0.08),
+      inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+  }
+
+  .shadow-skeuo-inner-sm {
+    box-shadow: 
+      inset 2px 2px 4px rgba(0, 0, 0, 0.08),
+      inset -2px -2px 4px rgba(255, 255, 255, 0.8);
+  }
+
+  .shadow-skeuo-active {
+    box-shadow: 
+      inset 2px 2px 5px rgba(0, 0, 0, 0.12),
+      inset -2px -2px 5px rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* Dark mode specific overrides for skeuomorphism */
+[data-theme="test"] .shadow-skeuo,
+.dark .shadow-skeuo {
+  box-shadow: 
+    4px 4px 10px rgba(0, 0, 0, 0.4),
+    -4px -4px 10px rgba(255, 255, 255, 0.03),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="test"] .shadow-skeuo-sm,
+.dark .shadow-skeuo-sm {
+  box-shadow: 
+    2px 2px 5px rgba(0, 0, 0, 0.4),
+    -2px -2px 5px rgba(255, 255, 255, 0.03),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="test"] .shadow-skeuo-inner,
+.dark .shadow-skeuo-inner {
+  box-shadow: 
+    inset 4px 4px 8px rgba(0, 0, 0, 0.5),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="test"] .shadow-skeuo-inner-sm,
+.dark .shadow-skeuo-inner-sm {
+  box-shadow: 
+    inset 2px 2px 4px rgba(0, 0, 0, 0.5),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="test"] .shadow-skeuo-active,
+.dark .shadow-skeuo-active {
+  box-shadow: 
+    inset 2px 2px 5px rgba(0, 0, 0, 0.6),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.03);
 }

@@ -44,16 +44,20 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-svh flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+    <div
+      className="min-h-svh flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 relative"
+      style={{ backgroundImage: 'url(/login_bg.png)' }}
+    >
+      <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" />
+      <div className="w-full max-w-md relative z-10">
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <img src="/logo.png" alt="LocalCricket Logo" className="size-10 object-contain" />
-            <span className="text-2xl font-bold tracking-tight text-foreground">LocalCricket</span>
+          <div className="inline-flex items-center gap-3 mb-4">
+            <img src="/logo.png" alt="LocalCricket Logo" className="size-20 object-contain drop-shadow-lg" />
+            <span className="text-5xl font-extrabold tracking-tight text-white drop-shadow-md">LocalCricket</span>
           </div>
-          <p className="text-muted-foreground text-sm">Manage tournaments. Score matches. Track stats.</p>
+          <p className="text-white/90 text-sm drop-shadow-sm font-medium">Manage tournaments. Score matches. Track stats.</p>
         </div>
-        <Card>
+        <Card className="backdrop-blur-md bg-card/95">
           <CardHeader>
             <CardTitle className="text-xl">Welcome back</CardTitle>
             <CardDescription>Sign in to your account</CardDescription>
@@ -178,16 +182,20 @@ export function SignupPage() {
   }
 
   return (
-    <div className="min-h-svh flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+    <div
+      className="min-h-svh flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 relative"
+      style={{ backgroundImage: 'url(/login_bg.png)' }}
+    >
+      <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" />
+      <div className="w-full max-w-md relative z-10">
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 mb-4">
-            <img src="/logo.png" alt="LocalCricket Logo" className="size-10 object-contain" />
-            <span className="text-2xl font-bold tracking-tight text-foreground">LocalCricket</span>
+          <div className="inline-flex items-center gap-3 mb-4">
+            <img src="/logo.png" alt="LocalCricket Logo" className="size-20 object-contain drop-shadow-lg" />
+            <span className="text-5xl font-extrabold tracking-tight text-white drop-shadow-md">LocalCricket</span>
           </div>
-          <p className="text-muted-foreground text-sm">Your all-in-one cricket tournament platform</p>
+          <p className="text-white/90 text-sm drop-shadow-sm font-medium">Your all-in-one cricket tournament platform</p>
         </div>
-        <Card>
+        <Card className="backdrop-blur-md bg-card/95">
           <CardHeader>
             <CardTitle className="text-xl">Create account</CardTitle>
             <CardDescription>Choose your role to get started</CardDescription>

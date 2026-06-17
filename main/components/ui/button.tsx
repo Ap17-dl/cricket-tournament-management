@@ -9,16 +9,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-primary text-primary-foreground shadow-skeuo hover:bg-primary/90 active:shadow-skeuo-active active:translate-y-[1px]",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
+          "bg-destructive text-white shadow-skeuo hover:bg-destructive/90 active:shadow-skeuo-active active:translate-y-[1px] focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border bg-background shadow-skeuo hover:bg-accent hover:text-accent-foreground active:shadow-skeuo-active active:translate-y-[1px] dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-secondary text-secondary-foreground shadow-skeuo hover:bg-secondary/80 active:shadow-skeuo-active active:translate-y-[1px]",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
+          "hover:bg-accent hover:text-accent-foreground active:shadow-skeuo-inner-sm active:bg-accent dark:hover:bg-accent/50",
+        link: "text-primary underline-offset-4 hover:underline active:opacity-70",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
