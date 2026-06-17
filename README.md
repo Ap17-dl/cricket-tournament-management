@@ -233,3 +233,10 @@ Whether it's a hostel tournament, a college league, a box cricket competition, o
 Built for cricket lovers, tournament organizers, and everyone who has ever asked:
 
 "Score kitna hua?"
+
+---
+
+### Author 
+
+Ap17-dl
+Linkedin: https://www.linkedin.com/in/ankush-pratham/
