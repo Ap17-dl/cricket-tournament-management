@@ -316,7 +316,12 @@ export function MatchPage() {
     if (data) {
       // Recalculate stats for each innings to guarantee correctness
       const updatedInningsList = (data as Innings[]).map((inn) => {
-        const balls = inn.ball_events || []
+        // Sort ball events to prevent shuffling in display
+        const balls = [...(inn.ball_events || [])].sort((a, b) => {
+          if (a.over_number !== b.over_number) return a.over_number - b.over_number
+          return a.ball_number - b.ball_number
+        })
+
         const totalRuns = balls.reduce((s, b) => s + b.runs + b.extra_runs, 0)
         const wickets = balls.filter((b) => b.is_wicket).length
         const extras = balls.reduce((s, b) => s + b.extra_runs, 0)
@@ -341,6 +346,7 @@ export function MatchPage() {
 
         return {
           ...inn,
+          ball_events: balls,
           total_runs: totalRuns,
           wickets: wickets,
           extras: extras,
@@ -692,6 +698,9 @@ export function MatchPage() {
       if (newBatsmanId) {
         finalStrikerId = newBatsmanId
         setStrikerId(newBatsmanId)
+      } else {
+        finalStrikerId = null
+        setStrikerId(null)
       }
       setNewBatsmanId('')
       setWicketType('bowled')
@@ -981,7 +990,18 @@ export function MatchPage() {
     ? bowlingXISet
     : allPlayers.filter((p) => p.team_id === bowlingTeamId).map((p) => ({ player_id: p.id, player: p, team_id: bowlingTeamId! }))
 
-  const availableBatsmen = battingXI.filter((xi) => xi.player_id !== strikerId && xi.player_id !== nonStrikerId)
+  const dismissedBatsmenIds = new Set<string>(
+    (currentInnings?.ball_events || [])
+      .filter((b) => b.is_wicket && b.batsman_id)
+      .map((b) => b.batsman_id as string)
+  )
+
+  const availableBatsmen = battingXI.filter(
+    (xi) =>
+      xi.player_id !== strikerId &&
+      xi.player_id !== nonStrikerId &&
+      !dismissedBatsmenIds.has(xi.player_id)
+  )
 
   const buildCommentary = (runs: number, extra?: ExtraType, extraRuns = 0) => {
     if (extra === 'wide') {
@@ -1524,8 +1544,10 @@ export function MatchPage() {
             )}
             <div className="space-y-2">
               <Label>New batsman</Label>
-              <Select value={newBatsmanId} onValueChange={setNewBatsmanId}>
-                <SelectTrigger><SelectValue placeholder="Select incoming batsman" /></SelectTrigger>
+              <Select value={newBatsmanId} onValueChange={setNewBatsmanId} disabled={availableBatsmen.length === 0}>
+                <SelectTrigger>
+                  <SelectValue placeholder={availableBatsmen.length === 0 ? "No batsmen remaining (All out)" : "Select incoming batsman"} />
+                </SelectTrigger>
                 <SelectContent>
                   {availableBatsmen.map((xi) => (
                     <SelectItem key={xi.player_id} value={xi.player_id}>{xi.player?.name}</SelectItem>
@@ -1535,7 +1557,11 @@ export function MatchPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={recordWicket} className="bg-cricket-wicket hover:bg-cricket-wicket/90">
+            <Button
+              onClick={recordWicket}
+              className="bg-cricket-wicket hover:bg-cricket-wicket/90"
+              disabled={availableBatsmen.length > 0 && !newBatsmanId}
+            >
               Record Wicket
             </Button>
           </DialogFooter>
