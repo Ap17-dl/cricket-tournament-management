@@ -694,7 +694,7 @@ export function MatchPage() {
 
       setWicketDialog(false)
       
-      let finalStrikerId = strikerId
+      let finalStrikerId: string | null = strikerId
       if (newBatsmanId) {
         finalStrikerId = newBatsmanId
         setStrikerId(newBatsmanId)
