@@ -202,6 +202,16 @@
       inset 2px 2px 5px rgba(0, 0, 0, 0.12),
       inset -2px -2px 5px rgba(255, 255, 255, 0.6);
   }
+
+  .bg-auth {
+    background-image: url('/login_bg_mobile.png');
+  }
+
+  @media (min-width: 640px) {
+    .bg-auth {
+      background-image: url('/login_bg.png');
+    }
+  }
 }
 
 /* Dark mode specific overrides for skeuomorphism */

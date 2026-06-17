@@ -45,8 +45,7 @@ export function LoginPage() {
 
   return (
     <div
-      className="min-h-svh flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 relative"
-      style={{ backgroundImage: 'url(/login_bg.png)' }}
+      className="min-h-svh flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 relative bg-auth"
     >
       <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" />
       <div className="w-full max-w-md relative z-10">
@@ -57,7 +56,7 @@ export function LoginPage() {
           </div>
           <p className="text-white/90 text-sm drop-shadow-sm font-medium">Manage tournaments. Score matches. Track stats.</p>
         </div>
-        <Card className="bg-white/60 dark:bg-black/65 backdrop-blur-xl border-white/40 dark:border-white/15 shadow-2xl">
+        <Card className="!bg-white/80 backdrop-blur-xl border-white/40 shadow-2xl">
           <CardHeader>
             <CardTitle className="text-xl">Welcome back</CardTitle>
             <CardDescription>Sign in to your account</CardDescription>
@@ -183,8 +182,7 @@ export function SignupPage() {
 
   return (
     <div
-      className="min-h-svh flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 relative"
-      style={{ backgroundImage: 'url(/login_bg.png)' }}
+      className="min-h-svh flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 relative bg-auth"
     >
       <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" />
       <div className="w-full max-w-md relative z-10">
@@ -195,7 +193,7 @@ export function SignupPage() {
           </div>
           <p className="text-white/90 text-sm drop-shadow-sm font-medium">Your all-in-one cricket tournament platform</p>
         </div>
-        <Card className="bg-white/60 dark:bg-black/65 backdrop-blur-xl border-white/40 dark:border-white/15 shadow-2xl">
+        <Card className="!bg-white/80 backdrop-blur-xl border-white/40 shadow-2xl">
           <CardHeader>
             <CardTitle className="text-xl">Create account</CardTitle>
             <CardDescription>Choose your role to get started</CardDescription>
