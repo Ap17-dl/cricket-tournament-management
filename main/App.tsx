@@ -10,6 +10,7 @@ import { TournamentDetailPage, TeamPlayersPage } from '@/pages/TournamentDetailP
 import { MatchPage } from '@/pages/MatchPage'
 import { MatchesListPage } from '@/pages/MatchesListPage'
 import { StatsPage } from '@/pages/StatsPage'
+import { CareersPage } from '@/pages/CareersPage'
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setLoading, fetchProfile } = useAuthStore()
@@ -63,6 +64,7 @@ export function App() {
             <Route path="/matches" element={<MatchesListPage />} />
             <Route path="/matches/:id" element={<MatchPage />} />
             <Route path="/stats" element={<StatsPage />} />
+            <Route path="/careers" element={<CareersPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

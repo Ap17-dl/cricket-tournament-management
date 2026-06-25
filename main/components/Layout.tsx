@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { Navbar } from '@/components/Navbar'
+import { Footer } from '@/components/Footer'
 import { useAuthStore } from '@/store/auth'
 import { useAppStore } from '@/store/app'
 
@@ -33,11 +34,12 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-svh bg-background">
+    <div className="min-h-svh bg-background flex flex-col">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
         <Outlet />
       </main>
+      <Footer />
     </div>
   )
 }
