@@ -1,4 +1,6 @@
+// @ts-nocheck
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const RECIPIENT_EMAIL = 'ankush170306@gmail.com';
