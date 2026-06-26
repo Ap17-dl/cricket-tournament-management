@@ -36,7 +36,7 @@ export function Layout() {
   return (
     <div className="min-h-svh bg-background flex flex-col">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+      <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full min-h-[calc(100svh-3.5rem)]">
         <Outlet />
       </main>
       <Footer />
