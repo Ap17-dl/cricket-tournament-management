@@ -16,7 +16,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { full_name, email, phone, position, experience_years, portfolio_url, cover_letter } = await req.json();
+    const { full_name, email, phone, position, experience_years, portfolio_url, cover_letter, resume_url } = await req.json();
 
     if (!RESEND_API_KEY) {
       console.error('RESEND_API_KEY is not set');
@@ -53,6 +53,10 @@ Deno.serve(async (req: Request) => {
             <tr>
               <td style="padding: 10px 0; color: #6b7280; font-size: 13px; vertical-align: top;">Portfolio</td>
               <td style="padding: 10px 0; font-size: 14px;">${portfolio_url !== 'Not provided' ? `<a href="${portfolio_url}" style="color: #166534;">${portfolio_url}</a>` : 'Not provided'}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #6b7280; font-size: 13px; vertical-align: top;">Resume</td>
+              <td style="padding: 10px 0; font-size: 14px;">${resume_url ? `<a href="${resume_url}" style="color: #166534; font-weight: 600;">📎 Download Resume</a>` : 'Not provided'}</td>
             </tr>
           </table>
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;" />

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,9 @@ import {
   Users,
   Zap,
   ArrowLeft,
+  Paperclip,
+  X,
+  FileText,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/utils'
@@ -65,9 +68,26 @@ export function CareersPage() {
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [resumeFile, setResumeFile] = useState<File | null>(null)
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  const handleFileChange = (file: File | null) => {
+    if (!file) { setResumeFile(null); return }
+    const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    if (!allowed.includes(file.type)) {
+      toast.error('Please upload a PDF, DOC, or DOCX file')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('File size must be under 10 MB')
+      return
+    }
+    setResumeFile(file)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,6 +95,11 @@ export function CareersPage() {
 
     if (!formData.full_name.trim() || !formData.email.trim() || !formData.cover_letter.trim()) {
       toast.error('Please fill in all required fields')
+      return
+    }
+
+    if (!resumeFile) {
+      toast.error('Please upload your resume')
       return
     }
 
@@ -87,6 +112,20 @@ export function CareersPage() {
     setSubmitting(true)
 
     try {
+      // 1. Upload resume to Supabase Storage
+      let resume_url: string | null = null
+      if (resumeFile) {
+        const ext = resumeFile.name.split('.').pop()
+        const fileName = `${Date.now()}_${formData.full_name.trim().replace(/\s+/g, '_')}.${ext}`
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('resumes')
+          .upload(fileName, resumeFile, { upsert: false })
+        if (uploadError) throw new Error(`Resume upload failed: ${uploadError.message}`)
+        const { data: urlData } = supabase.storage.from('resumes').getPublicUrl(uploadData.path)
+        resume_url = urlData.publicUrl
+      }
+
+      // 2. Save application to DB
       const { error } = await supabase.from('career_applications').insert({
         full_name: formData.full_name.trim(),
         email: formData.email.trim(),
@@ -95,11 +134,12 @@ export function CareersPage() {
         experience_years: parseInt(formData.experience_years) || 0,
         portfolio_url: formData.portfolio_url.trim() || null,
         cover_letter: formData.cover_letter.trim(),
+        resume_url,
       })
 
       if (error) throw error
 
-      // Send email notification via Edge Function
+      // 3. Send email notification via Edge Function
       try {
         const { error: fnError } = await supabase.functions.invoke('send-career-email', {
           body: {
@@ -110,16 +150,17 @@ export function CareersPage() {
             experience_years: parseInt(formData.experience_years) || 0,
             portfolio_url: formData.portfolio_url.trim() || 'Not provided',
             cover_letter: formData.cover_letter.trim(),
+            resume_url: resume_url || 'Not provided',
           },
         })
         if (fnError) console.warn('Email notification failed:', fnError)
       } catch {
-        // Email notification is best-effort; don't block the user
         console.warn('Edge function call failed — application still saved')
       }
 
       setSubmitted(true)
       setFormData(initialFormData)
+      setResumeFile(null)
       toast.success('Application submitted successfully!')
     } catch (err: any) {
       console.error('Submission error:', err)
@@ -347,6 +388,67 @@ export function CareersPage() {
                   <p className="text-xs text-muted-foreground">
                     Minimum 50 characters. Share your passion and experience.
                   </p>
+                </div>
+
+                {/* Resume Upload */}
+                <div className="space-y-2">
+                  <Label>
+                    Resume <span className="text-destructive">*</span>
+                  </Label>
+                  <div
+                    className={cn(
+                      'relative border-2 border-dashed rounded-lg p-5 transition-colors cursor-pointer',
+                      dragOver
+                        ? 'border-primary bg-primary/5'
+                        : resumeFile
+                        ? 'border-primary/40 bg-primary/5'
+                        : 'border-border hover:border-primary/50 hover:bg-accent/50'
+                    )}
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      setDragOver(false)
+                      handleFileChange(e.dataTransfer.files[0] ?? null)
+                    }}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      className="sr-only"
+                      onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
+                    />
+                    {resumeFile ? (
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <FileText className="size-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{resumeFile.name}</p>
+                          <p className="text-xs text-muted-foreground">{(resumeFile.size / 1024).toFixed(0)} KB</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setResumeFile(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
+                          className="size-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 py-2">
+                        <div className="size-10 rounded-full bg-accent flex items-center justify-center">
+                          <Paperclip className="size-5 text-muted-foreground" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm font-medium">Drop your resume here or <span className="text-primary underline">browse</span></p>
+                          <p className="text-xs text-muted-foreground mt-0.5">PDF, DOC, DOCX — max 10 MB</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <Separator />
