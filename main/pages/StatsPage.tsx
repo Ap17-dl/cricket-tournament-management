@@ -47,8 +47,6 @@ export function StatsPage() {
 
   const fetchStats = async (tournamentId: string) => {
     setLoading(true)
-
-    // Compute stats directly from ball_events for all matches in this tournament
     const { data: matches } = await supabase
       .from('matches')
       .select('id, status')
@@ -62,8 +60,7 @@ export function StatsPage() {
     }
 
     const matchIds = matches.map((m) => m.id)
-
-    // Fetch all innings + ball events for these matches
+  
     const { data: inningsData } = await supabase
       .from('innings')
       .select('*, ball_events(*)')
@@ -76,7 +73,6 @@ export function StatsPage() {
       return
     }
 
-    // Aggregate stats per player
     const playerMap: Record<string, {
       runs: number; balls_faced: number; fours: number; sixes: number;
       wickets: number; overs_balls: number; runs_conceded: number; maidens: number;
@@ -131,7 +127,7 @@ export function StatsPage() {
         }
       }
 
-      // Maidens
+     
       for (const [bowlerId, overs] of Object.entries(bowlerOverRuns)) {
         ensurePlayer(bowlerId)
         for (const runs of Object.values(overs)) {
@@ -139,15 +135,13 @@ export function StatsPage() {
         }
       }
 
-      // Highest score per innings
       for (const [pid, runs] of Object.entries(batsmanInningsRuns)) {
         if (playerMap[pid]) {
           playerMap[pid].highest_score = Math.max(playerMap[pid].highest_score, runs)
         }
       }
     }
-
-    // Fetch player details
+    
     const playerIds = Object.keys(playerMap)
     if (playerIds.length === 0) {
       setStats([])
@@ -164,7 +158,6 @@ export function StatsPage() {
     const playersById: Record<string, any> = {}
     if (playersData) playersData.forEach((p) => { playersById[p.id] = p })
 
-    // Build the stats array
     const computed: StatsWithPlayer[] = playerIds
       .filter((pid) => playersById[pid])
       .map((pid) => {
@@ -269,7 +262,6 @@ export function StatsPage() {
         </div>
       </div>
 
-      {/* Leaderboard cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="border-l-4 border-l-yellow-500">
           <CardContent className="pt-4 pb-4">
@@ -323,7 +315,6 @@ export function StatsPage() {
         </Card>
       </div>
 
-      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
