@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
+import { Footer } from '@/components/Footer'
 import { cn } from '@/lib/utils'
 import { Zap, Calendar, Radio, Trophy, BookOpen, ArrowLeft, Home, Award, Activity } from 'lucide-react'
 
@@ -108,24 +109,12 @@ export function TTLayout() {
       </header>
 
       {/* Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+      <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full min-h-[calc(100svh-3.5rem)]">
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-card/50 backdrop-blur-sm mt-auto">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            Table Tennis Module — Local Tournament
-          </p>
-          <a
-            href="/"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← Back to Cricket
-          </a>
-        </div>
-      </footer>
+      {/* Universal Footer */}
+      <Footer />
     </div>
   )
 }

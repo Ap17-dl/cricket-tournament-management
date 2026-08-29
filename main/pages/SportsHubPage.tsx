@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/auth'
+import { Footer } from '@/components/Footer'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -396,25 +397,7 @@ export function SportsHubPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card/40 backdrop-blur-sm mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Local Tournament Logo" className="size-6 object-contain" />
-            <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} Local Tournament. All-in-One Multi-Sport Management.
-            </p>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <Link to="/careers" className="hover:text-foreground transition-colors">
-              Careers
-            </Link>
-            <span>·</span>
-            <a href="mailto:ankush170306@gmail.com" className="hover:text-foreground transition-colors">
-              Contact Support
-            </a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
