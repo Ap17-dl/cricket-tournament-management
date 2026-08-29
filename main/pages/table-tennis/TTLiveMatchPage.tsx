@@ -118,18 +118,18 @@ export function TTLiveMatchPage() {
           <ArrowLeft className="size-4 mr-1" /> Back
         </Button>
         <div className="text-center">
-          <p className="text-xs text-muted-foreground">🏓 TABLE TENNIS</p>
+          <p className="text-xs text-muted-foreground font-semibold tracking-wider">TABLE TENNIS</p>
           <p className="text-sm font-semibold">{match.match_title}</p>
         </div>
         <Badge variant={isMatchOver ? 'secondary' : 'default'} className={cn(!isMatchOver && 'bg-red-500 text-white')}>
-          {isMatchOver ? 'COMPLETED' : '🔴 LIVE'}
+          {isMatchOver ? 'COMPLETED' : 'LIVE'}
         </Badge>
       </div>
 
       {/* Deuce indicator */}
       {gameStatus.isDeuce && (
         <div className="text-center py-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
-          <p className="text-lg font-bold text-amber-600">⚡ DEUCE</p>
+          <p className="text-lg font-bold text-amber-600 tracking-wide">DEUCE</p>
         </div>
       )}
 

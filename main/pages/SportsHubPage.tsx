@@ -45,39 +45,39 @@ interface SportCardProps {
 const UPCOMING_SPORTS = [
   {
     name: 'Badminton',
-    emoji: '🏸',
     tagline: 'Rally Point Scoring & Tournaments',
     desc: 'Singles and doubles scoring, 21-point sets, interval tracking, and league fixtures.',
+    icon: Activity,
   },
   {
     name: 'Football / Futsal',
-    emoji: '⚽',
     tagline: 'Match Timer, Goals & Cards',
     desc: 'Goal timeline, assist tracking, penalty shootouts, substitutions, and tournament tables.',
+    icon: Trophy,
   },
   {
     name: 'Tennis',
-    emoji: '🎾',
     tagline: 'Game, Set & Match Engine',
     desc: 'Advantage scoring, 7-point tiebreakers, server tracking, and Grand Slam style brackets.',
+    icon: Zap,
   },
   {
     name: 'Basketball',
-    emoji: '🏀',
     tagline: 'Quarters, Fouls & Shot Clock',
     desc: 'Quarter-by-quarter scoring, 2pt/3pt trackers, team fouls, and tournament leaderboards.',
+    icon: Award,
   },
   {
     name: 'Volleyball',
-    emoji: '🏐',
     tagline: 'Rotation & Set Scoring',
     desc: '25-point set scoring, player position rotation tracking, and tournament playoffs.',
+    icon: Activity,
   },
   {
     name: 'Pickleball',
-    emoji: '🏓',
     tagline: 'Side-out & Kitchen Tracker',
     desc: 'Traditional side-out scoring, 11-point games, doubles server number, and quick matches.',
+    icon: Zap,
   },
 ]
 
@@ -232,8 +232,8 @@ export function SportsHubPage() {
               <CardContent className="p-6 sm:p-7 space-y-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-3xl shrink-0 shadow-sm">
-                      🏏
+                    <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shrink-0 shadow-sm flex items-center justify-center size-14">
+                      <Trophy className="size-7" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -302,8 +302,8 @@ export function SportsHubPage() {
               <CardContent className="p-6 sm:p-7 space-y-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-3.5 rounded-2xl bg-blue-500/10 text-blue-600 border border-blue-500/20 text-3xl shrink-0 shadow-sm">
-                      🏓
+                    <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0 shadow-sm flex items-center justify-center size-14">
+                      <Activity className="size-7" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -381,27 +381,32 @@ export function SportsHubPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {UPCOMING_SPORTS.map((sport) => (
-              <Card key={sport.name} className="border-border/60 bg-card/60 backdrop-blur-xs hover:border-border transition-all">
-                <CardContent className="pt-5 pb-5 space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-2xl p-2 rounded-xl bg-muted/60 inline-block">{sport.emoji}</span>
-                      <div>
-                        <h4 className="font-bold text-base">{sport.name}</h4>
-                        <p className="text-xs text-primary/80 font-medium">{sport.tagline}</p>
+            {UPCOMING_SPORTS.map((sport) => {
+              const Icon = sport.icon
+              return (
+                <Card key={sport.name} className="border-border/60 bg-card/60 backdrop-blur-xs hover:border-border transition-all">
+                  <CardContent className="pt-5 pb-5 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-xl bg-muted flex items-center justify-center size-10 shrink-0 text-primary">
+                          <Icon className="size-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-base">{sport.name}</h4>
+                          <p className="text-xs text-primary/80 font-medium">{sport.tagline}</p>
+                        </div>
                       </div>
+                      <Badge variant="outline" className="text-[10px] bg-muted/50 text-muted-foreground border-border shrink-0">
+                        Loading...
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="text-[10px] bg-muted/50 text-muted-foreground border-border shrink-0">
-                      Loading...
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {sport.desc}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {sport.desc}
+                    </p>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </section>
       </main>

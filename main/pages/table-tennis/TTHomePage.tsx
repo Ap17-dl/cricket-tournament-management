@@ -79,7 +79,7 @@ export function TTHomePage() {
             Table Tennis Module
           </Badge>
           <h1 className="text-3xl font-bold tracking-tight mb-2">
-            🏓 Table Tennis
+            Table Tennis
           </h1>
           <p className="text-primary-foreground/80 text-sm max-w-md">
             Quick Match Management — Start instant matches, track scores point-by-point, and view results.

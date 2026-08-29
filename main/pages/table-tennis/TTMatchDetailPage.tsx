@@ -104,8 +104,9 @@ export function TTMatchDetailPage() {
           </div>
 
           {match.winner_side && (
-            <p className="text-primary font-semibold">
-              🏆 {match.winner_side === 'A' ? sideAName : sideBName} wins!
+            <p className="text-primary font-semibold flex items-center justify-center gap-1.5">
+              <Trophy className="size-4 text-primary" />
+              {match.winner_side === 'A' ? sideAName : sideBName} wins!
             </p>
           )}
         </CardContent>

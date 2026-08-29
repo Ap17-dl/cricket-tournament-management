@@ -113,7 +113,7 @@ export function TTLiveListPage() {
                       </div>
                     </div>
                     {isDeuce && (
-                      <p className="text-xs font-semibold text-amber-600 mt-2">⚡ DEUCE</p>
+                      <p className="text-xs font-semibold text-amber-600 mt-2">DEUCE</p>
                     )}
                     {match.best_of > 1 && (
                       <p className="text-xs text-muted-foreground mt-2">

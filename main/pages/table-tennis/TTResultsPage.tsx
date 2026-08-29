@@ -84,11 +84,11 @@ export function TTResultsPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
-                        <p className={`font-semibold text-sm ${isAWinner ? 'text-primary' : ''}`}>
-                          {isAWinner && '🏆 '}{sideAName}
+                        <p className={`font-semibold text-sm flex items-center gap-1.5 ${isAWinner ? 'text-primary' : ''}`}>
+                          {isAWinner && <Trophy className="size-3.5 text-primary shrink-0" />}{sideAName}
                         </p>
-                        <p className={`font-semibold text-sm ${!isAWinner ? 'text-primary' : ''}`}>
-                          {!isAWinner && '🏆 '}{sideBName}
+                        <p className={`font-semibold text-sm flex items-center gap-1.5 ${!isAWinner ? 'text-primary' : ''}`}>
+                          {!isAWinner && <Trophy className="size-3.5 text-primary shrink-0" />}{sideBName}
                         </p>
                       </div>
                       <div className="text-right">

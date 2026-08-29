@@ -219,8 +219,8 @@ export function TTTournamentDetailPage() {
                 {standings.map((row, idx) => (
                   <TableRow key={row.name}>
                     <TableCell className="font-semibold text-muted-foreground">#{idx + 1}</TableCell>
-                    <TableCell className="font-medium text-foreground">
-                      {idx === 0 && row.won > 0 ? `🏆 ` : ''}
+                    <TableCell className="font-medium text-foreground flex items-center gap-1.5">
+                      {idx === 0 && row.won > 0 && <Trophy className="size-3.5 text-amber-500 shrink-0" />}
                       {row.name}
                     </TableCell>
                     <TableCell className="text-center tabular-nums">{row.played}</TableCell>
@@ -269,12 +269,12 @@ export function TTTournamentDetailPage() {
                       </div>
 
                       <div className="text-sm font-semibold space-y-1">
-                        <p className={cn(isCompleted && m.winner_side === 'A' && 'text-primary font-bold')}>
-                          {isCompleted && m.winner_side === 'A' && '🏆 '}{nameA}
+                        <p className={cn('flex items-center gap-1.5', isCompleted && m.winner_side === 'A' && 'text-primary font-bold')}>
+                          {isCompleted && m.winner_side === 'A' && <Trophy className="size-3.5 text-primary shrink-0" />}{nameA}
                         </p>
                         <p className="text-xs text-muted-foreground font-normal">vs</p>
-                        <p className={cn(isCompleted && m.winner_side === 'B' && 'text-primary font-bold')}>
-                          {isCompleted && m.winner_side === 'B' && '🏆 '}{nameB}
+                        <p className={cn('flex items-center gap-1.5', isCompleted && m.winner_side === 'B' && 'text-primary font-bold')}>
+                          {isCompleted && m.winner_side === 'B' && <Trophy className="size-3.5 text-primary shrink-0" />}{nameB}
                         </p>
                       </div>
 

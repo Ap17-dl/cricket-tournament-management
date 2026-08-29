@@ -16,7 +16,7 @@ export function TTRulesPage() {
         <CardContent className="pt-6 pb-6 space-y-6">
           {/* Scoring */}
           <section>
-            <h2 className="text-lg font-bold mb-3">🏓 Scoring</h2>
+            <h2 className="text-lg font-bold mb-3">Scoring</h2>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex gap-2">
                 <span className="text-primary font-bold">•</span>
@@ -49,7 +49,7 @@ export function TTRulesPage() {
 
           {/* Serving */}
           <section>
-            <h2 className="text-lg font-bold mb-3">🎯 Serving</h2>
+            <h2 className="text-lg font-bold mb-3">Serving</h2>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex gap-2">
                 <span className="text-primary font-bold">•</span>
@@ -77,7 +77,7 @@ export function TTRulesPage() {
 
           {/* Singles */}
           <section>
-            <h2 className="text-lg font-bold mb-3">👤 Singles</h2>
+            <h2 className="text-lg font-bold mb-3">Singles</h2>
             <p className="text-sm text-muted-foreground">
               <strong className="text-foreground">1 player vs 1 player.</strong> Each player serves for 2 points in alternation. The winner is the first to reach the target score with a 2-point advantage.
             </p>
@@ -87,7 +87,7 @@ export function TTRulesPage() {
 
           {/* Doubles */}
           <section>
-            <h2 className="text-lg font-bold mb-3">👥 Doubles</h2>
+            <h2 className="text-lg font-bold mb-3">Doubles</h2>
             <p className="text-sm text-muted-foreground mb-3">
               <strong className="text-foreground">2 players vs 2 players.</strong> In doubles, the serving and receiving order follows a rotation.
             </p>
@@ -108,7 +108,7 @@ export function TTRulesPage() {
 
           {/* Match structure */}
           <section>
-            <h2 className="text-lg font-bold mb-3">🎮 Match Structure</h2>
+            <h2 className="text-lg font-bold mb-3">Match Structure</h2>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex gap-2">
                 <span className="text-primary font-bold">•</span>

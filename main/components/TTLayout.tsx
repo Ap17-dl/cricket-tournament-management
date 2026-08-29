@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
 import { cn } from '@/lib/utils'
-import { Zap, Calendar, Radio, Trophy, BookOpen, ArrowLeft, Home, Award } from 'lucide-react'
+import { Zap, Calendar, Radio, Trophy, BookOpen, ArrowLeft, Home, Award, Activity } from 'lucide-react'
 
 const ttNavLinks = [
   { to: '/table-tennis', label: 'Home', icon: Home, exact: true },
@@ -19,14 +19,16 @@ export function TTLayout() {
   const location = useLocation()
 
   useEffect(() => {
-    document.title = '🏓 Table Tennis — Local Tournament'
+    document.title = 'Table Tennis — Local Tournament'
   }, [])
 
   if (loading) {
     return (
       <div className="min-h-svh flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
-          <div className="text-4xl animate-pulse">🏓</div>
+          <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+            <Activity className="size-6 text-primary" />
+          </div>
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -54,7 +56,7 @@ export function TTLayout() {
             </a>
             <span className="text-border">|</span>
             <Link to="/table-tennis" className="flex items-center gap-2">
-              <span className="text-xl">🏓</span>
+              <Activity className="size-5 text-primary" />
               <span className="font-bold text-lg tracking-tight hidden sm:block">Table Tennis</span>
             </Link>
           </div>
@@ -114,7 +116,7 @@ export function TTLayout() {
       <footer className="border-t border-border bg-card/50 backdrop-blur-sm mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
-            🏓 Table Tennis Module — Local Tournament
+            Table Tennis Module — Local Tournament
           </p>
           <a
             href="/"
