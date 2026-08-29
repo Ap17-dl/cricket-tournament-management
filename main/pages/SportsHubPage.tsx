@@ -17,30 +17,14 @@ import {
   Trophy,
   Zap,
   Calendar,
-  BarChart3,
   LogOut,
-  ChevronRight,
   Sparkles,
   ArrowRight,
   Clock,
-  Radio,
   Flame,
   Award,
+  Activity,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
-
-interface SportCardProps {
-  title: string
-  emoji: string
-  tagline: string
-  description: string
-  status: 'active' | 'coming_soon'
-  color: string
-  to?: string
-  features: string[]
-  stats?: { label: string; value: number | string }[]
-  quickLinks?: { label: string; to: string; icon?: any }[]
-}
 
 const UPCOMING_SPORTS = [
   {
