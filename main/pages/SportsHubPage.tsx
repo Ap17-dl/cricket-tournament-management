@@ -76,6 +76,26 @@ export function SportsHubPage() {
     ttTournaments: 0,
   })
 
+  const fetchHubStats = async () => {
+    try {
+      const [cTourRes, cLiveRes, ttMatchRes, ttTourRes] = await Promise.all([
+        supabase.from('tournaments').select('id', { count: 'exact', head: true }),
+        supabase.from('matches').select('id', { count: 'exact', head: true }).eq('status', 'live'),
+        supabase.from('tt_matches').select('id', { count: 'exact', head: true }),
+        supabase.from('tt_tournaments').select('id', { count: 'exact', head: true }),
+      ])
+
+      setStats({
+        cricketTournaments: cTourRes.count ?? 0,
+        cricketLive: cLiveRes.count ?? 0,
+        ttMatches: ttMatchRes.count ?? 0,
+        ttTournaments: ttTourRes.count ?? 0,
+      })
+    } catch (err) {
+      console.warn('Hub stats error:', err)
+    }
+  }
+
   useEffect(() => {
     fetchHubStats()
   }, [])
@@ -93,26 +113,6 @@ export function SportsHubPage() {
 
   if (!user) {
     return <Navigate to="/login" replace />
-  }
-
-  const fetchHubStats = async () => {
-    try {
-      const [cTourRes, cLiveRes, ttMatchRes, ttTourRes] = await Promise.all([
-        supabase.from('tournaments').select('id', { count: 'exact', head: true }),
-        supabase.from('matches').select('id', { count: 'exact', head: true }).eq('status', 'live'),
-        supabase.from('tt_matches').select('id', { count: 'exact', head: true }),
-        supabase.from('tt_tournaments').select('id', { count: 'exact', head: true }),
-      ])
-
-      setStats({
-        cricketTournaments: cTourRes.count ?? 0,
-        cricketLive: cLiveRes.count ?? 0,
-        ttMatches: ttMatchRes.count ?? 0,
-        ttTournaments: ttTourRes.count ?? 0,
-      })
-    } catch {
-      // ignore
-    }
   }
 
   const handleSignOut = async () => {

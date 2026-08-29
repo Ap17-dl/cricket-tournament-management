@@ -27,30 +27,34 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: null, profile: null })
   },
   fetchProfile: async (userId: string, userEmail?: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle()
-
-    if (data) {
-      set({ profile: data })
-    } else {
-      // Profile doesn't exist yet — create it from auth metadata
-      const { data: userData } = await supabase.auth.getUser()
-      const meta = userData?.user?.user_metadata
-      const email = userEmail || userData?.user?.email || ''
-      const { data: created } = await supabase
+    try {
+      const { data } = await supabase
         .from('profiles')
-        .upsert({
-          id: userId,
-          name: meta?.name || meta?.full_name || email.split('@')[0] || 'User',
-          email,
-          role: meta?.role || 'viewer',
-        })
-        .select()
-        .single()
-      if (created) set({ profile: created })
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle()
+
+      if (data) {
+        set({ profile: data })
+      } else {
+        // Profile doesn't exist yet — create it from auth metadata
+        const { data: userData } = await supabase.auth.getUser()
+        const meta = userData?.user?.user_metadata
+        const email = userEmail || userData?.user?.email || ''
+        const { data: created } = await supabase
+          .from('profiles')
+          .upsert({
+            id: userId,
+            name: meta?.name || meta?.full_name || email.split('@')[0] || 'User',
+            email,
+            role: meta?.role || 'viewer',
+          })
+          .select()
+          .single()
+        if (created) set({ profile: created })
+      }
+    } catch (err) {
+      console.warn('Profile fetch error:', err)
     }
   },
   updateRole: async (role: UserRole) => {

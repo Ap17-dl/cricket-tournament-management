@@ -31,16 +31,36 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setLoading, fetchProfile } = useAuthStore()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchProfile(session.user.id, session.user.email).finally(() => setLoading(false))
-      } else {
-        setLoading(false)
-      }
-    })
+    let isMounted = true
+
+    // Safety timeout: ensure loading state never hangs indefinitely
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) setLoading(false)
+    }, 1500)
+
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!isMounted) return
+        setUser(session?.user ?? null)
+        if (session?.user) {
+          fetchProfile(session.user.id, session.user.email).finally(() => {
+            if (isMounted) setLoading(false)
+          })
+        } else {
+          setLoading(false)
+        }
+      })
+      .catch((err) => {
+        console.warn('Session error:', err)
+        if (isMounted) setLoading(false)
+      })
+      .finally(() => {
+        clearTimeout(safetyTimer)
+      })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return
       setUser(session?.user ?? null)
       if (session?.user) {
         fetchProfile(session.user.id, session.user.email)
@@ -49,7 +69,11 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      isMounted = false
+      clearTimeout(safetyTimer)
+      subscription.unsubscribe()
+    }
   }, [])
 
   return <>{children}</>
@@ -57,7 +81,16 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuthStore()
-  if (loading) return null
+  if (loading) {
+    return (
+      <div className="min-h-svh flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <img src="/logo.png" alt="Loading..." className="size-10 object-contain animate-pulse" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
   if (user) return <Navigate to="/" replace />
   return <>{children}</>
 }
