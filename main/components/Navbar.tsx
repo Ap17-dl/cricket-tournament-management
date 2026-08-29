@@ -65,8 +65,8 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <img src="/logo.png" alt="LocalCricket Logo" className="size-8 object-contain" />
-          <span className="font-bold text-lg tracking-tight hidden sm:block">LocalCricket</span>
+          <img src="/logo.png" alt="Local Tournament Logo" className="size-8 object-contain" />
+          <span className="font-bold text-lg tracking-tight hidden sm:block">Local Tournament</span>
         </Link>
 
         {/* Nav Links */}

@@ -21,15 +21,15 @@ export function Footer() {
             <Link to="/" className="flex items-center gap-2.5 group">
               <img
                 src="/logo.png"
-                alt="LocalCricket Logo"
+                alt="Local Tournament Logo"
                 className="size-9 object-contain transition-transform group-hover:scale-110"
               />
               <span className="font-bold text-xl tracking-tight text-foreground">
-                LocalCricket
+                Local Tournament
               </span>
             </Link>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Your go-to platform for managing local cricket tournaments. Live scoring, stats, and everything cricket.
+              Your go-to platform for managing local tournaments. Live scoring, stats, and everything sports.
             </p>
             <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
               <MapPin className="size-3.5 shrink-0" />
@@ -131,7 +131,7 @@ export function Footer() {
       <div className="border-t border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-muted-foreground">
-            © {currentYear} LocalCricket. All rights reserved.
+            © {currentYear} Local Tournament. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Link

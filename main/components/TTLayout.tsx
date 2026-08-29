@@ -18,7 +18,7 @@ export function TTLayout() {
   const location = useLocation()
 
   useEffect(() => {
-    document.title = '🏓 Table Tennis — LocalCricket'
+    document.title = '🏓 Table Tennis — Local Tournament'
   }, [])
 
   if (loading) {
@@ -46,10 +46,10 @@ export function TTLayout() {
             <a
               href="/"
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              title="Back to LocalCricket"
+              title="Back to Local Tournament"
             >
               <ArrowLeft className="size-4" />
-              <span className="hidden sm:inline">LocalCricket</span>
+              <span className="hidden sm:inline">Local Tournament</span>
             </a>
             <span className="text-border">|</span>
             <Link to="/table-tennis" className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export function TTLayout() {
       <footer className="border-t border-border bg-card/50 backdrop-blur-sm mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
-            🏓 Table Tennis Module — LocalCricket
+            🏓 Table Tennis Module — Local Tournament
           </p>
           <a
             href="/"
