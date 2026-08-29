@@ -2,10 +2,11 @@ import { useEffect } from 'react'
 import { Link, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
 import { cn } from '@/lib/utils'
-import { Zap, Calendar, Radio, Trophy, BookOpen, ArrowLeft, Home } from 'lucide-react'
+import { Zap, Calendar, Radio, Trophy, BookOpen, ArrowLeft, Home, Award } from 'lucide-react'
 
 const ttNavLinks = [
   { to: '/table-tennis', label: 'Home', icon: Home, exact: true },
+  { to: '/table-tennis/tournaments', label: 'Tournaments', icon: Award },
   { to: '/table-tennis/quick-match', label: 'Quick Match', icon: Zap },
   { to: '/table-tennis/fixtures', label: 'Fixtures', icon: Calendar },
   { to: '/table-tennis/live', label: 'Live', icon: Radio },

@@ -3,9 +3,16 @@ import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Zap, Calendar, Radio, Trophy, BookOpen, ChevronRight } from 'lucide-react'
+import { Zap, Calendar, Radio, Trophy, BookOpen, ChevronRight, Award } from 'lucide-react'
 
 const actions = [
+  {
+    to: '/table-tennis/tournaments',
+    icon: Award,
+    title: 'Tournaments',
+    description: 'Manage tournaments and generate league fixtures',
+    color: 'bg-purple-500/10 text-purple-600',
+  },
   {
     to: '/table-tennis/quick-match',
     icon: Zap,

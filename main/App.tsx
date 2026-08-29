@@ -22,6 +22,9 @@ import { TTLiveListPage } from '@/pages/table-tennis/TTLiveListPage'
 import { TTResultsPage } from '@/pages/table-tennis/TTResultsPage'
 import { TTMatchDetailPage } from '@/pages/table-tennis/TTMatchDetailPage'
 import { TTRulesPage } from '@/pages/table-tennis/TTRulesPage'
+import { TTTournamentsPage } from '@/pages/table-tennis/TTTournamentsPage'
+import { TTCreateTournamentPage } from '@/pages/table-tennis/TTCreateTournamentPage'
+import { TTTournamentDetailPage } from '@/pages/table-tennis/TTTournamentDetailPage'
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setLoading, fetchProfile } = useAuthStore()
@@ -80,6 +83,9 @@ export function App() {
           {/* Table Tennis routes */}
           <Route path="/table-tennis" element={<TTLayout />}>
             <Route index element={<TTHomePage />} />
+            <Route path="tournaments" element={<TTTournamentsPage />} />
+            <Route path="tournaments/new" element={<TTCreateTournamentPage />} />
+            <Route path="tournaments/:id" element={<TTTournamentDetailPage />} />
             <Route path="quick-match" element={<TTQuickMatchPage />} />
             <Route path="fixtures" element={<TTFixturesPage />} />
             <Route path="live" element={<TTLiveListPage />} />

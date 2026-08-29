@@ -193,6 +193,18 @@ export interface TTPlayer {
   created_at: string
 }
 
+export interface TTTournament {
+  id: string
+  name: string
+  match_type: TTMatchType
+  format: TTMatchFormat
+  best_of: TTBestOf
+  status: 'upcoming' | 'active' | 'completed'
+  venue?: string
+  created_by: string
+  created_at: string
+}
+
 export interface TTMatch {
   id: string
   match_title: string
@@ -211,9 +223,11 @@ export interface TTMatch {
   created_by: string
   created_at: string
   updated_at: string
+  tournament_id?: string | null
   // Joined relations
   players?: TTMatchPlayer[]
   games?: TTGame[]
+  tournament?: TTTournament
 }
 
 export interface TTMatchPlayer {
