@@ -9,7 +9,6 @@ import {
   BookOpen,
   Award,
   Radio,
-  MapPin,
   Mail,
   LayoutGrid,
 } from 'lucide-react'
