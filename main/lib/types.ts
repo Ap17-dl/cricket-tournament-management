@@ -174,3 +174,82 @@ export interface ScoringState {
   wickets: number
   extras: number
 }
+
+// =============================================
+// Table Tennis Types
+// =============================================
+
+export type TTMatchType = 'singles' | 'doubles'
+export type TTMatchFormat = 11 | 21
+export type TTMatchStatus = 'scheduled' | 'live' | 'completed' | 'cancelled'
+export type TTBestOf = 1 | 3 | 5
+export type TTSide = 'A' | 'B'
+
+export interface TTPlayer {
+  id: string
+  name: string
+  profile_id?: string
+  created_by: string
+  created_at: string
+}
+
+export interface TTMatch {
+  id: string
+  match_title: string
+  match_type: TTMatchType
+  format: TTMatchFormat
+  best_of: TTBestOf
+  status: TTMatchStatus
+  winner_side?: TTSide | null
+  venue?: string
+  table_number?: string
+  notes?: string
+  first_server_side: TTSide
+  scheduled_at?: string
+  started_at?: string
+  completed_at?: string
+  created_by: string
+  created_at: string
+  updated_at: string
+  // Joined relations
+  players?: TTMatchPlayer[]
+  games?: TTGame[]
+}
+
+export interface TTMatchPlayer {
+  id: string
+  match_id: string
+  side: TTSide
+  player_id: string
+  player_name: string
+  player_order: number
+  // Joined
+  player?: TTPlayer
+}
+
+export interface TTGame {
+  id: string
+  match_id: string
+  game_number: number
+  score_a: number
+  score_b: number
+  winner_side?: TTSide | null
+  first_server_side: TTSide
+  started_at: string
+  completed_at?: string
+  // Joined
+  score_events?: TTScoreEvent[]
+}
+
+export interface TTScoreEvent {
+  id: string
+  match_id: string
+  game_id: string
+  point_number: number
+  scoring_side: TTSide
+  score_a_after: number
+  score_b_after: number
+  server_player_id?: string
+  receiver_player_id?: string
+  created_at: string
+}

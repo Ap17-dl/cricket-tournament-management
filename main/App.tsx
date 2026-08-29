@@ -12,6 +12,17 @@ import { MatchesListPage } from '@/pages/MatchesListPage'
 import { StatsPage } from '@/pages/StatsPage'
 import { CareersPage } from '@/pages/CareersPage'
 
+// Table Tennis imports
+import { TTLayout } from '@/components/TTLayout'
+import { TTHomePage } from '@/pages/table-tennis/TTHomePage'
+import { TTQuickMatchPage } from '@/pages/table-tennis/TTQuickMatchPage'
+import { TTLiveMatchPage } from '@/pages/table-tennis/TTLiveMatchPage'
+import { TTFixturesPage } from '@/pages/table-tennis/TTFixturesPage'
+import { TTLiveListPage } from '@/pages/table-tennis/TTLiveListPage'
+import { TTResultsPage } from '@/pages/table-tennis/TTResultsPage'
+import { TTMatchDetailPage } from '@/pages/table-tennis/TTMatchDetailPage'
+import { TTRulesPage } from '@/pages/table-tennis/TTRulesPage'
+
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setLoading, fetchProfile } = useAuthStore()
 
@@ -66,6 +77,17 @@ export function App() {
             <Route path="/stats" element={<StatsPage />} />
             <Route path="/careers" element={<CareersPage />} />
           </Route>
+          {/* Table Tennis routes */}
+          <Route path="/table-tennis" element={<TTLayout />}>
+            <Route index element={<TTHomePage />} />
+            <Route path="quick-match" element={<TTQuickMatchPage />} />
+            <Route path="fixtures" element={<TTFixturesPage />} />
+            <Route path="live" element={<TTLiveListPage />} />
+            <Route path="live/:matchId" element={<TTLiveMatchPage />} />
+            <Route path="results" element={<TTResultsPage />} />
+            <Route path="results/:matchId" element={<TTMatchDetailPage />} />
+            <Route path="rules" element={<TTRulesPage />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
@@ -74,3 +96,4 @@ export function App() {
 }
 
 export default App
+

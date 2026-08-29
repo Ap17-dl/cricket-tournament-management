@@ -243,6 +243,25 @@ export function HomePage() {
         ))}
       </div>
 
+      {/* Table Tennis */}
+      <section>
+        <Card
+          className="cursor-pointer hover:shadow-lg hover:border-primary/40 transition-all duration-200 border-l-4 border-l-primary"
+          onClick={() => window.open('/table-tennis', '_blank')}
+        >
+          <CardContent className="pt-5 pb-5 flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-primary/10 shrink-0">
+              <span className="text-2xl">🏓</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-base">Table Tennis</h3>
+              <p className="text-sm text-muted-foreground">Quick Match & Table Tennis Scoring</p>
+            </div>
+            <ChevronRight className="size-5 text-muted-foreground shrink-0" />
+          </CardContent>
+        </Card>
+      </section>
+
       {/* Live matches */}
       {liveMatches.length > 0 && (
         <section>
