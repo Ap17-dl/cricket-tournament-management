@@ -194,7 +194,7 @@ console.log(`\n${'='.repeat(40)}`)
 console.log(`Results: ${passed} passed, ${failed} failed, ${passed + failed} total`)
 if (failed > 0) {
   console.log('❌ Some tests failed!')
-  process.exit(1)
+  throw new Error('Some tests failed!')
 } else {
   console.log('✅ All tests passed!')
 }

@@ -6,7 +6,6 @@ import {
   calculateGameStatus,
   calculateServer,
   calculateDoublesServer,
-  calculateMatchStatus,
 } from '@/lib/tt-scoring'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -91,10 +90,6 @@ export function TTLiveMatchPage() {
   const sideBName = playersB.map(p => p.player_name).join(' + ')
 
   const gameStatus = calculateGameStatus(currentGame.score_a, currentGame.score_b, match.format)
-  const matchStatus = calculateMatchStatus(
-    games.map(g => ({ winner_side: g.winner_side as 'A' | 'B' | null })),
-    match.best_of
-  )
 
   // Current server
   let serverName = ''
@@ -257,7 +252,7 @@ export function TTLiveMatchPage() {
             <div className="flex flex-wrap gap-1.5">
               {scoreEvents
                 .filter(e => e.game_id === currentGame.id)
-                .map((e, i) => (
+                .map((e) => (
                   <Badge
                     key={e.id}
                     variant="outline"
