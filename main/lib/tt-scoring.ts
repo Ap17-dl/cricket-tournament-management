@@ -91,9 +91,10 @@ export function calculateMatchStatus(
 /**
  * Calculate the current server based on total points played in this game.
  *
- * Standard rules:
- * - Service changes every 2 points.
- * - At deuce (both >= target-1), service changes every point.
+ * Rules:
+ * - 11-point format: Service changes every 2 points.
+ * - 21-point format: Service changes every 5 points.
+ * - At deuce (both >= target-1), service changes every 1 point.
  *
  * firstServerSide: which side serves first in this game.
  */
@@ -105,19 +106,15 @@ export function calculateServer(
 ): 'A' | 'B' {
   const totalPoints = scoreA + scoreB
   const deuceThreshold = target - 1
+  const pointsPerService = target === 21 ? 5 : 2
 
   const inDeuce = scoreA >= deuceThreshold && scoreB >= deuceThreshold
 
   if (inDeuce) {
     // Service changes every 1 point during deuce
-    // The server at the start of deuce depends on who was serving
-    // when deuce began. At total points = 2*(target-1), we're at deuce start.
-    // From that point, every single point changes server.
     const deuceStartPoints = 2 * deuceThreshold
     const pointsSinceDeuce = totalPoints - deuceStartPoints
-    // Number of server changes before deuce: deuceStartPoints / 2
-    const changesBeforeDeuce = deuceStartPoints / 2
-    // Total changes = changesBeforeDeuce + pointsSinceDeuce
+    const changesBeforeDeuce = deuceStartPoints / pointsPerService
     const totalChanges = changesBeforeDeuce + pointsSinceDeuce
     if (totalChanges % 2 === 0) {
       return firstServerSide
@@ -125,8 +122,8 @@ export function calculateServer(
     return firstServerSide === 'A' ? 'B' : 'A'
   }
 
-  // Normal play: service changes every 2 points
-  const serviceBlock = Math.floor(totalPoints / 2)
+  // Normal play: service changes every 2 points (11-pt) or every 5 points (21-pt)
+  const serviceBlock = Math.floor(totalPoints / pointsPerService)
   if (serviceBlock % 2 === 0) {
     return firstServerSide
   }
@@ -156,6 +153,7 @@ export function calculateDoublesServer(
 ): ServerInfo {
   const totalPoints = scoreA + scoreB
   const deuceThreshold = target - 1
+  const pointsPerService = target === 21 ? 5 : 2
 
   const inDeuce = scoreA >= deuceThreshold && scoreB >= deuceThreshold
 
@@ -165,12 +163,12 @@ export function calculateDoublesServer(
     // At deuce, service changes every point but rotation still follows
     const deuceStartPoints = 2 * deuceThreshold
     const pointsSinceDeuce = totalPoints - deuceStartPoints
-    const changesBeforeDeuce = deuceStartPoints / 2
+    const changesBeforeDeuce = deuceStartPoints / pointsPerService
     const totalChanges = changesBeforeDeuce + pointsSinceDeuce
     rotationIndex = totalChanges % 4
   } else {
-    // Every 2 points, advance the rotation
-    const serviceBlock = Math.floor(totalPoints / 2)
+    // Every 2 points (11-pt) or 5 points (21-pt), advance the rotation
+    const serviceBlock = Math.floor(totalPoints / pointsPerService)
     rotationIndex = serviceBlock % 4
   }
 
@@ -227,4 +225,25 @@ export function validatePointAddition(
     return 'Game is already finished. Cannot add more points.'
   }
   return null
+}
+
+/**
+ * Check if players/teams should change ends (sides) in the deciding game.
+ *
+ * In the deciding game (e.g. game 1 of 1, game 3 of 3, game 5 of 5):
+ * - For 21-point game: Change sides when first player/team reaches 10 points.
+ * - For 11-point game: Change sides when first player/team reaches 5 points.
+ * The serving and receiving order remains fixed when changing sides.
+ */
+export function shouldChangeEnds(
+  scoreA: number,
+  scoreB: number,
+  target: number,
+  gameNumber: number,
+  bestOf: number
+): { shouldChange: boolean; threshold: number; isDecidingGame: boolean } {
+  const isDecidingGame = gameNumber === bestOf
+  const threshold = target === 21 ? 10 : 5
+  const shouldChange = isDecidingGame && (scoreA >= threshold || scoreB >= threshold)
+  return { shouldChange, threshold, isDecidingGame }
 }

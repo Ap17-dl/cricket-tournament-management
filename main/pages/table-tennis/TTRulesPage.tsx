@@ -53,23 +53,29 @@ export function TTRulesPage() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex gap-2">
                 <span className="text-primary font-bold">•</span>
-                <span>Service changes <strong className="text-foreground">every 2 points</strong> during normal play.</span>
+                <span>In <strong className="text-foreground">11-point format</strong>, service changes <strong className="text-foreground">every 2 points</strong>.</span>
               </li>
               <li className="flex gap-2">
                 <span className="text-primary font-bold">•</span>
-                <span>At <strong className="text-foreground">10–10 (deuce)</strong> and beyond, service changes <strong className="text-foreground">every single point</strong>.</span>
+                <span>In <strong className="text-foreground">21-point format</strong>, service changes <strong className="text-foreground">every 5 points</strong>.</span>
               </li>
               <li className="flex gap-2">
                 <span className="text-primary font-bold">•</span>
-                <span>The server is tracked automatically — no manual changes needed.</span>
+                <span>At <strong className="text-foreground">deuce (10–10 or 20–20)</strong> and beyond, service alternates <strong className="text-foreground">every single point</strong>.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-primary font-bold">•</span>
+                <span>The server is tracked and highlighted automatically on the scoreboard.</span>
               </li>
             </ul>
             <div className="mt-3 rounded-lg bg-muted/50 p-3 text-sm font-mono space-y-0.5">
-              <p>Points 1–2: <span className="text-foreground">Player A serves</span></p>
-              <p>Points 3–4: <span className="text-foreground">Player B serves</span></p>
-              <p>Points 5–6: <span className="text-foreground">Player A serves</span></p>
-              <p>...and so on</p>
-              <p className="mt-1 text-amber-600">At deuce: service alternates every point</p>
+              <p className="text-xs text-muted-foreground font-sans font-semibold mb-1">11-Point Games:</p>
+              <p>Points 1–2: <span className="text-foreground">Player A serves (2 pts)</span></p>
+              <p>Points 3–4: <span className="text-foreground">Player B serves (2 pts)</span></p>
+              <p className="text-xs text-muted-foreground font-sans font-semibold mt-2 mb-1">21-Point Games:</p>
+              <p>Points 1–5: <span className="text-foreground">Player A serves (5 pts)</span></p>
+              <p>Points 6–10: <span className="text-foreground">Player B serves (5 pts)</span></p>
+              <p className="mt-2 text-amber-600 font-sans text-xs">At deuce: service alternates every 1 point</p>
             </div>
           </section>
 
@@ -87,21 +93,38 @@ export function TTRulesPage() {
 
           {/* Doubles */}
           <section>
-            <h2 className="text-lg font-bold mb-3">Doubles</h2>
-            <p className="text-sm text-muted-foreground mb-3">
-              <strong className="text-foreground">2 players vs 2 players.</strong> In doubles, the serving and receiving order follows a rotation.
-            </p>
-            <h3 className="text-sm font-semibold mb-2">Doubles Rotation</h3>
-            <div className="rounded-lg bg-muted/50 p-3 text-sm font-mono space-y-0.5">
-              <p>Serve 1: <span className="text-foreground">A1 serves → B1 receives</span></p>
-              <p>Serve 2: <span className="text-foreground">B1 serves → A2 receives</span></p>
-              <p>Serve 3: <span className="text-foreground">A2 serves → B2 receives</span></p>
-              <p>Serve 4: <span className="text-foreground">B2 serves → A1 receives</span></p>
-              <p className="text-muted-foreground mt-1">Then the cycle repeats.</p>
+            <h2 className="text-lg font-bold mb-3">2v2 Doubles Rules</h2>
+            <ul className="space-y-2 text-sm text-muted-foreground mb-4">
+              <li className="flex gap-2">
+                <span className="text-primary font-bold">•</span>
+                <span><strong className="text-foreground">5 Serves Per Player (21-Point Format):</strong> Each server serves 5 consecutive points before service passes to the next player in the fixed rotation.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-primary font-bold">•</span>
+                <span><strong className="text-foreground">Fixed Rotation:</strong> Player A1 → B1 → A2 → B2 → A1, with 5 serves each.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-primary font-bold">•</span>
+                <span><strong className="text-foreground">Deuce (20–20 or 10–10):</strong> Service alternates every 1 point following the rotation order until a 2-point lead is achieved.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-primary font-bold">•</span>
+                <span><strong className="text-foreground">Deciding Game Side Change:</strong> In the deciding game, teams change sides when one side reaches <strong className="text-foreground">10 points</strong> (for 21-pt) or <strong className="text-foreground">5 points</strong> (for 11-pt).</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-primary font-bold">•</span>
+                <span><strong className="text-foreground">Fixed Order on Side Change:</strong> The serving and receiving order remains strictly fixed when changing sides.</span>
+              </li>
+            </ul>
+
+            <h3 className="text-sm font-semibold mb-2">Doubles Rotation Sequence</h3>
+            <div className="rounded-lg bg-muted/50 p-3 text-sm font-mono space-y-1">
+              <p>Rotation 1: <span className="text-foreground font-semibold">A1 serves (5 pts)</span> → B1 receives</p>
+              <p>Rotation 2: <span className="text-foreground font-semibold">B1 serves (5 pts)</span> → A2 receives</p>
+              <p>Rotation 3: <span className="text-foreground font-semibold">A2 serves (5 pts)</span> → B2 receives</p>
+              <p>Rotation 4: <span className="text-foreground font-semibold">B2 serves (5 pts)</span> → A1 receives</p>
+              <p className="text-muted-foreground mt-2">Cycle repeats (A1 → B1 → A2 → B2 → A1).</p>
             </div>
-            <p className="text-sm text-muted-foreground mt-3">
-              At deuce, the same rotation applies but service changes every single point instead of every 2.
-            </p>
           </section>
 
           <Separator />

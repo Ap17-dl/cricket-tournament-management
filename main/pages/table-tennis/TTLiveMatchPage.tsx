@@ -6,6 +6,7 @@ import {
   calculateGameStatus,
   calculateServer,
   calculateDoublesServer,
+  shouldChangeEnds,
 } from '@/lib/tt-scoring'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -110,6 +111,10 @@ export function TTLiveMatchPage() {
   const gamesWonA = games.filter(g => g.winner_side === 'A').length
   const gamesWonB = games.filter(g => g.winner_side === 'B').length
 
+  const changeEndsInfo = currentGame
+    ? shouldChangeEnds(currentGame.score_a, currentGame.score_b, match.format, currentGame.game_number, match.best_of)
+    : null
+
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       {/* Header */}
@@ -125,6 +130,13 @@ export function TTLiveMatchPage() {
           {isMatchOver ? 'COMPLETED' : 'LIVE'}
         </Badge>
       </div>
+
+      {/* Change ends indicator (Deciding game at 10 pts for 21-pt or 5 pts for 11-pt) */}
+      {changeEndsInfo?.shouldChange && !gameStatus.isFinished && !isMatchOver && (
+        <div className="text-center py-1.5 px-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-xs font-semibold text-blue-600">
+          Change Ends ({changeEndsInfo.threshold} pts reached in deciding game) · Serving order remains fixed
+        </div>
+      )}
 
       {/* Deuce indicator */}
       {gameStatus.isDeuce && (
