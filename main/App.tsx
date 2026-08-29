@@ -11,6 +11,7 @@ import { MatchPage } from '@/pages/MatchPage'
 import { MatchesListPage } from '@/pages/MatchesListPage'
 import { StatsPage } from '@/pages/StatsPage'
 import { CareersPage } from '@/pages/CareersPage'
+import { SportsHubPage } from '@/pages/SportsHubPage'
 
 // Table Tennis imports
 import { TTLayout } from '@/components/TTLayout'
@@ -68,8 +69,13 @@ export function App() {
         <Routes>
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
+          
+          {/* Main Sports Selection Hub */}
+          <Route path="/" element={<SportsHubPage />} />
+
+          {/* Cricket routes */}
           <Route element={<Layout />}>
-            <Route index element={<HomePage />} />
+            <Route path="/cricket" element={<HomePage />} />
             <Route path="/tournaments" element={<TournamentsListPage />} />
             <Route path="/tournaments/new" element={<CreateTournamentPage />} />
             <Route path="/tournaments/:id" element={<TournamentDetailPage />} />

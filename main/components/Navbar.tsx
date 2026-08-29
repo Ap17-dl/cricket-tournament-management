@@ -21,11 +21,13 @@ import {
   ChevronDown,
   Zap,
   RefreshCw,
+  ArrowLeft,
+  LayoutGrid,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinks = [
-  { to: '/', label: 'Home', icon: Home },
+  { to: '/cricket', label: 'Cricket', icon: Home },
   { to: '/tournaments', label: 'Tournaments', icon: Trophy },
   { to: '/matches', label: 'Matches', icon: Calendar },
   { to: '/stats', label: 'Stats', icon: BarChart3 },
@@ -50,8 +52,8 @@ export function Navbar() {
     await updateRole(nextRole)
   }
 
-  const displayName = profile?.name || user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email || 'User'
-  const userInitial = displayName.charAt(0).toUpperCase()
+  const displayName = profile?.name || user?.email?.split('@')[0] || 'User'
+  const userInitial = displayName[0]?.toUpperCase() || 'U'
 
   return (
     <header
@@ -63,11 +65,22 @@ export function Navbar() {
       )}
     >
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <img src="/logo.png" alt="Local Tournament Logo" className="size-8 object-contain" />
-          <span className="font-bold text-lg tracking-tight hidden sm:block">Local Tournament</span>
-        </Link>
+        {/* Logo and Back to Hub */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <Link
+            to="/"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors py-1 px-1.5 rounded hover:bg-accent"
+            title="Back to All Sports"
+          >
+            <ArrowLeft className="size-3.5" />
+            <span className="hidden sm:inline font-medium">All Sports</span>
+          </Link>
+          <span className="text-border">|</span>
+          <Link to="/cricket" className="flex items-center gap-2">
+            <img src="/logo.png" alt="Local Tournament Logo" className="size-7 object-contain" />
+            <span className="font-bold text-base tracking-tight hidden sm:block">Cricket</span>
+          </Link>
+        </div>
 
         {/* Nav Links */}
         <nav className="hidden md:flex items-center gap-1">
