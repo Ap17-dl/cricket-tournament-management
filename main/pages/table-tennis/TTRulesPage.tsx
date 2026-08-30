@@ -14,7 +14,7 @@ export function TTRulesPage() {
 
       <Card>
         <CardContent className="pt-6 pb-6 space-y-6">
-          {/* Scoring */}
+          {}
           <section>
             <h2 className="text-lg font-bold mb-3">Scoring</h2>
             <ul className="space-y-2 text-sm text-muted-foreground">
@@ -47,7 +47,7 @@ export function TTRulesPage() {
 
           <Separator />
 
-          {/* Serving */}
+          {}
           <section>
             <h2 className="text-lg font-bold mb-3">Serving</h2>
             <ul className="space-y-2 text-sm text-muted-foreground">
@@ -81,7 +81,7 @@ export function TTRulesPage() {
 
           <Separator />
 
-          {/* Singles */}
+          {}
           <section>
             <h2 className="text-lg font-bold mb-3">Singles</h2>
             <p className="text-sm text-muted-foreground">
@@ -91,7 +91,7 @@ export function TTRulesPage() {
 
           <Separator />
 
-          {/* Doubles */}
+          {}
           <section>
             <h2 className="text-lg font-bold mb-3">2v2 Doubles Rules</h2>
             <ul className="space-y-2 text-sm text-muted-foreground mb-4">
@@ -129,7 +129,7 @@ export function TTRulesPage() {
 
           <Separator />
 
-          {/* Match structure */}
+          {}
           <section>
             <h2 className="text-lg font-bold mb-3">Match Structure</h2>
             <ul className="space-y-2 text-sm text-muted-foreground">

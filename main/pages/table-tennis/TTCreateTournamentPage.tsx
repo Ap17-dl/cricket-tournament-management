@@ -30,14 +30,14 @@ export function TTCreateTournamentPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Form State
+  
   const [name, setName] = useState('')
   const [venue, setVenue] = useState('')
   const [matchType, setMatchType] = useState<TTMatchType>('singles')
   const [format, setFormat] = useState<TTMatchFormat>(11)
   const [bestOf, setBestOf] = useState<TTBestOf>(1)
 
-  // Participants Lists
+  
   const [singlesPlayers, setSinglesPlayers] = useState<SinglesParticipant[]>([
     { name: '' },
     { name: '' },
@@ -73,7 +73,7 @@ export function TTCreateTournamentPage() {
     setLoading(true)
 
     try {
-      // 1. Gather and validate names
+      
       const namesToValidate: string[] = []
 
       if (matchType === 'singles') {
@@ -93,13 +93,13 @@ export function TTCreateTournamentPage() {
         })
       }
 
-      // Check duplicate players
+      
       const uniqueNames = new Set(namesToValidate)
       if (uniqueNames.size !== namesToValidate.length) {
         throw new Error('Player names must be unique. No duplicate names allowed in the tournament.')
       }
 
-      // 2. Create the tournament record
+      
       const { data: tournament, error: tourError } = await supabase
         .from('tt_tournaments')
         .insert({
@@ -115,9 +115,9 @@ export function TTCreateTournamentPage() {
 
       if (tourError) throw tourError
 
-      // 3. Resolve player IDs & setup participant blocks
+      
       interface ParticipantBlock {
-        displayName: string // Player A name or Team A name
+        displayName: string 
         players: Array<{ name: string; id: string }>
       }
 
@@ -147,7 +147,7 @@ export function TTCreateTournamentPage() {
         }
       }
 
-      // 4. Generate Round-Robin matchups
+      
       const pairings: Array<[ParticipantBlock, ParticipantBlock]> = []
       for (let i = 0; i < participantBlocks.length; i++) {
         for (let j = i + 1; j < participantBlocks.length; j++) {
@@ -155,11 +155,11 @@ export function TTCreateTournamentPage() {
         }
       }
 
-      // 5. Insert matches and match players
+      
       for (let idx = 0; idx < pairings.length; idx++) {
         const [sideA, sideB] = pairings[idx]
 
-        // Create scheduled match
+        
         const { data: match, error: matchError } = await supabase
           .from('tt_matches')
           .insert({

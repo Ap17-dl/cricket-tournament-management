@@ -42,10 +42,10 @@ export function TTLayout() {
 
   return (
     <div className="min-h-svh bg-background flex flex-col">
-      {/* TT Navbar */}
+      {}
       <header className="sticky top-0 z-50 border-b backdrop-blur-sm bg-background/90 border-border">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-          {/* Logo / Back */}
+          {}
           <div className="flex items-center gap-3 shrink-0">
             <a
               href="/"
@@ -62,7 +62,7 @@ export function TTLayout() {
             </Link>
           </div>
 
-          {/* Nav Links */}
+          {}
           <nav className="hidden md:flex items-center gap-1">
             {ttNavLinks.map(({ to, label, icon: Icon, exact }) => {
               const isActive = exact
@@ -87,7 +87,7 @@ export function TTLayout() {
           </nav>
         </div>
 
-        {/* Mobile nav */}
+        {}
         <div className="md:hidden border-t flex overflow-x-auto">
           {ttNavLinks.filter(l => l.label !== 'Home').map(({ to, label, icon: Icon }) => {
             const isActive = location.pathname.startsWith(to) && (to !== '/table-tennis' || location.pathname === '/table-tennis')
@@ -108,12 +108,12 @@ export function TTLayout() {
         </div>
       </header>
 
-      {/* Content */}
+      {}
       <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full min-h-[calc(100svh-3.5rem)]">
         <Outlet />
       </main>
 
-      {/* Universal Footer */}
+      {}
       <Footer />
     </div>
   )

@@ -23,13 +23,13 @@ export function TTQuickMatchPage() {
   const [bestOf, setBestOf] = useState<TTBestOf>(1)
   const [firstServer, setFirstServer] = useState<TTSide>('A')
 
-  // Players
+  
   const [playerA1, setPlayerA1] = useState('')
   const [playerA2, setPlayerA2] = useState('')
   const [playerB1, setPlayerB1] = useState('')
   const [playerB2, setPlayerB2] = useState('')
 
-  // Metadata
+  
   const [matchTitle, setMatchTitle] = useState('Quick Match')
   const [venue, setVenue] = useState('')
   const [tableNumber, setTableNumber] = useState('')
@@ -41,7 +41,7 @@ export function TTQuickMatchPage() {
   const handleStart = async () => {
     if (!user) return
 
-    // Validate players
+    
     const allNames: string[] = []
     if (!playerA1.trim() || !playerB1.trim()) {
       setError('All players must have names.')
@@ -57,7 +57,7 @@ export function TTQuickMatchPage() {
       allNames.push(playerA2.trim().toLowerCase(), playerB2.trim().toLowerCase())
     }
 
-    // Check duplicates
+    
     const unique = new Set(allNames)
     if (unique.size !== allNames.length) {
       setError('Each player must be unique. No duplicate names allowed.')

@@ -60,7 +60,7 @@ function PointsTable({ tournamentId }: { tournamentId: string }) {
         a.tied++; b.tied++; a.points++; b.points++
       }
 
-      // NRR calculation
+      
       const inns = match.innings || []
       inns.forEach((inn: { batting_team_id: string; total_runs: number; overs_completed: number; overs?: number }) => {
         const entry = table[inn.batting_team_id]

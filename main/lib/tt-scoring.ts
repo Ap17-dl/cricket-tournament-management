@@ -1,6 +1,6 @@
-// =============================================
-// Table Tennis Scoring Engine — Pure Functions
-// =============================================
+
+
+
 
 export interface GameStatus {
   isFinished: boolean
@@ -18,26 +18,26 @@ export interface MatchStatus {
 
 export interface ServerInfo {
   servingSide: 'A' | 'B'
-  serverPlayerOrder: number  // 1 or 2 (for doubles)
-  receiverPlayerOrder: number  // 1 or 2 (for doubles)
+  serverPlayerOrder: number  
+  receiverPlayerOrder: number  
 }
 
-/**
- * Calculate the status of a single game.
- *
- * Rules:
- * - A player must reach `target` points AND lead by at least 2.
- * - At (target-1)-(target-1) the game enters deuce.
- * - In deuce, play continues until one side leads by 2.
- */
+
+
+
+
+
+
+
+
 export function calculateGameStatus(
   scoreA: number,
   scoreB: number,
   target: number
 ): GameStatus {
-  const deuceThreshold = target - 1 // 10 for target=11, 20 for target=21
+  const deuceThreshold = target - 1 
 
-  // Deuce is only when both sides are at or above threshold AND scores are tied
+  
   const isDeuce =
     scoreA >= deuceThreshold &&
     scoreB >= deuceThreshold &&
@@ -57,12 +57,12 @@ export function calculateGameStatus(
   return { isFinished: false, winner: null, isDeuce }
 }
 
-/**
- * Calculate the match status based on completed games.
- *
- * bestOf: 1, 3, or 5
- * gamesToWin: ceil(bestOf / 2)
- */
+
+
+
+
+
+
 export function calculateMatchStatus(
   games: Array<{ winner_side: 'A' | 'B' | null }>,
   bestOf: number
@@ -88,16 +88,16 @@ export function calculateMatchStatus(
   }
 }
 
-/**
- * Calculate the current server based on total points played in this game.
- *
- * Rules:
- * - 11-point format: Service changes every 2 points.
- * - 21-point format: Service changes every 5 points.
- * - At deuce (both >= target-1), service changes every 1 point.
- *
- * firstServerSide: which side serves first in this game.
- */
+
+
+
+
+
+
+
+
+
+
 export function calculateServer(
   scoreA: number,
   scoreB: number,
@@ -111,7 +111,7 @@ export function calculateServer(
   const inDeuce = scoreA >= deuceThreshold && scoreB >= deuceThreshold
 
   if (inDeuce) {
-    // Service changes every 1 point during deuce
+    
     const deuceStartPoints = 2 * deuceThreshold
     const pointsSinceDeuce = totalPoints - deuceStartPoints
     const changesBeforeDeuce = deuceStartPoints / pointsPerService
@@ -122,7 +122,7 @@ export function calculateServer(
     return firstServerSide === 'A' ? 'B' : 'A'
   }
 
-  // Normal play: service changes every 2 points (11-pt) or every 5 points (21-pt)
+  
   const serviceBlock = Math.floor(totalPoints / pointsPerService)
   if (serviceBlock % 2 === 0) {
     return firstServerSide
@@ -130,21 +130,21 @@ export function calculateServer(
   return firstServerSide === 'A' ? 'B' : 'A'
 }
 
-/**
- * Calculate doubles server and receiver.
- *
- * In doubles, the serving/receiving order rotates:
- *   Rotation 0: A1 serves to B1
- *   Rotation 1: B1 serves to A2
- *   Rotation 2: A2 serves to B2
- *   Rotation 3: B2 serves to A1
- *   Rotation 4: A1 serves to B1 (cycle repeats)
- *
- * The initial order can be configured, but this follows standard ITTF doubles rotation.
- *
- * firstServerSide: which side serves first
- * Returns: { servingSide, serverPlayerOrder, receiverPlayerOrder }
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export function calculateDoublesServer(
   scoreA: number,
   scoreB: number,
@@ -160,24 +160,24 @@ export function calculateDoublesServer(
   let rotationIndex: number
 
   if (inDeuce) {
-    // At deuce, service changes every point but rotation still follows
+    
     const deuceStartPoints = 2 * deuceThreshold
     const pointsSinceDeuce = totalPoints - deuceStartPoints
     const changesBeforeDeuce = deuceStartPoints / pointsPerService
     const totalChanges = changesBeforeDeuce + pointsSinceDeuce
     rotationIndex = totalChanges % 4
   } else {
-    // Every 2 points (11-pt) or 5 points (21-pt), advance the rotation
+    
     const serviceBlock = Math.floor(totalPoints / pointsPerService)
     rotationIndex = serviceBlock % 4
   }
 
-  // Standard doubles rotation sequence:
-  // If first server is side A, player order 1:
-  //   rot 0: A1 → B1
-  //   rot 1: B1 → A2
-  //   rot 2: A2 → B2
-  //   rot 3: B2 → A1
+  
+  
+  
+  
+  
+  
   const rotations: Array<{
     servingSide: 'A' | 'B'
     serverPlayerOrder: number
@@ -199,22 +199,22 @@ export function calculateDoublesServer(
   return rotations[rotationIndex]
 }
 
-/**
- * Determine the first server for the next game.
- *
- * In table tennis, the receiver of the previous game becomes
- * the server of the next game.
- */
+
+
+
+
+
+
 export function getNextGameFirstServer(
   previousGameFirstServer: 'A' | 'B'
 ): 'A' | 'B' {
   return previousGameFirstServer === 'A' ? 'B' : 'A'
 }
 
-/**
- * Validate that adding a point to a side is legal.
- * Returns null if valid, or an error message string if invalid.
- */
+
+
+
+
 export function validatePointAddition(
   scoreA: number,
   scoreB: number,
@@ -227,14 +227,14 @@ export function validatePointAddition(
   return null
 }
 
-/**
- * Check if players/teams should change ends (sides) in the deciding game.
- *
- * In the deciding game (e.g. game 1 of 1, game 3 of 3, game 5 of 5):
- * - For 21-point game: Change sides when first player/team reaches 10 points.
- * - For 11-point game: Change sides when first player/team reaches 5 points.
- * The serving and receiving order remains fixed when changing sides.
- */
+
+
+
+
+
+
+
+
 export function shouldChangeEnds(
   scoreA: number,
   scoreB: number,

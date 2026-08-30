@@ -37,7 +37,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (data) {
         set({ profile: data })
       } else {
-        // Profile doesn't exist yet — create it from auth metadata
+        
         const { data: userData } = await supabase.auth.getUser()
         const meta = userData?.user?.user_metadata
         const email = userEmail || userData?.user?.email || ''

@@ -72,7 +72,7 @@ export function TTHomePage() {
 
   return (
     <div className="space-y-8">
-      {/* Hero */}
+      {}
       <div className="rounded-2xl bg-primary p-8 text-primary-foreground relative overflow-hidden">
         <div className="relative z-10">
           <Badge className="bg-primary-foreground/20 text-primary-foreground border-0 mb-3">
@@ -89,7 +89,7 @@ export function TTHomePage() {
         <div className="absolute -right-4 -bottom-4 size-24 rounded-full border-4 border-primary-foreground/10 opacity-30" />
       </div>
 
-      {/* Stats */}
+      {}
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: 'Total Matches', value: stats.total },
@@ -105,7 +105,7 @@ export function TTHomePage() {
         ))}
       </div>
 
-      {/* Actions */}
+      {}
       <section>
         <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

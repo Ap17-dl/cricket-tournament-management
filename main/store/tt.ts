@@ -1,6 +1,6 @@
-// =============================================
-// Table Tennis Zustand Store
-// =============================================
+
+
+
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
 import {
@@ -36,7 +36,7 @@ export interface TTMatchConfig {
 }
 
 interface TTState {
-  // Current match state
+  
   match: TTMatch | null
   players: TTMatchPlayer[]
   games: TTGame[]
@@ -45,10 +45,10 @@ interface TTState {
   loading: boolean
   error: string | null
 
-  // Player registry
+  
   allPlayers: TTPlayer[]
 
-  // Actions
+  
   fetchPlayers: () => Promise<void>
   createOrGetPlayer: (name: string, userId: string) => Promise<string>
   startMatch: (config: TTMatchConfig, userId: string) => Promise<string | null>
@@ -77,7 +77,7 @@ export const useTTStore = create<TTState>((set, get) => ({
   },
 
   createOrGetPlayer: async (name: string, userId: string) => {
-    // Check if player exists (case-insensitive)
+    
     const { data: existing } = await supabase
       .from('tt_players')
       .select('id')
@@ -102,7 +102,7 @@ export const useTTStore = create<TTState>((set, get) => ({
     try {
       const store = get()
 
-      // 1. Create or get players
+      
       const playerIdsA: string[] = []
       const playerIdsB: string[] = []
 
@@ -115,7 +115,7 @@ export const useTTStore = create<TTState>((set, get) => ({
         playerIdsB.push(id)
       }
 
-      // 2. Create match
+      
       const { data: match, error: matchError } = await supabase
         .from('tt_matches')
         .insert({
@@ -136,7 +136,7 @@ export const useTTStore = create<TTState>((set, get) => ({
 
       if (matchError) throw matchError
 
-      // 3. Create match players
+      
       const matchPlayers: Array<{
         match_id: string
         side: string
@@ -171,7 +171,7 @@ export const useTTStore = create<TTState>((set, get) => ({
 
       if (playersError) throw playersError
 
-      // 4. Create first game
+      
       const { data: game, error: gameError } = await supabase
         .from('tt_games')
         .insert({
@@ -238,14 +238,14 @@ export const useTTStore = create<TTState>((set, get) => ({
     const scoreA = currentGame.score_a + (side === 'A' ? 1 : 0)
     const scoreB = currentGame.score_b + (side === 'B' ? 1 : 0)
 
-    // Validate
+    
     const gameStatus = calculateGameStatus(currentGame.score_a, currentGame.score_b, match.format)
     if (gameStatus.isFinished) return
 
     const gameEvents = scoreEvents.filter(e => e.game_id === currentGame.id)
     const pointNumber = gameEvents.length + 1
 
-    // Calculate server
+    
     let serverPlayerId: string | undefined
     let receiverPlayerId: string | undefined
 
@@ -273,7 +273,7 @@ export const useTTStore = create<TTState>((set, get) => ({
       receiverPlayerId = receiverPlayer?.player_id
     }
 
-    // Insert score event
+    
     const { error: eventError } = await supabase
       .from('tt_score_events')
       .insert({
@@ -292,7 +292,7 @@ export const useTTStore = create<TTState>((set, get) => ({
       return
     }
 
-    // Update game scores
+    
     const newGameStatus = calculateGameStatus(scoreA, scoreB, match.format)
 
     const gameUpdate: Record<string, unknown> = {
@@ -307,7 +307,7 @@ export const useTTStore = create<TTState>((set, get) => ({
 
     await supabase.from('tt_games').update(gameUpdate).eq('id', currentGame.id)
 
-    // Reload events
+    
     const { data: allEvents } = await supabase
       .from('tt_score_events')
       .select('*')
@@ -317,7 +317,7 @@ export const useTTStore = create<TTState>((set, get) => ({
     const updatedGame = { ...currentGame, score_a: scoreA, score_b: scoreB, ...gameUpdate } as TTGame
     const updatedGames = games.map(g => g.id === currentGame.id ? updatedGame : g)
 
-    // Check if game finished — need to check match status
+    
     if (newGameStatus.isFinished) {
       const matchStatus = calculateMatchStatus(
         updatedGames.map(g => ({ winner_side: g.winner_side as 'A' | 'B' | null })),
@@ -325,7 +325,7 @@ export const useTTStore = create<TTState>((set, get) => ({
       )
 
       if (matchStatus.isFinished) {
-        // Match complete
+        
         await supabase.from('tt_matches').update({
           status: 'completed',
           winner_side: matchStatus.winner,
@@ -339,7 +339,7 @@ export const useTTStore = create<TTState>((set, get) => ({
           scoreEvents: (allEvents || []) as TTScoreEvent[],
         })
       } else {
-        // Start next game
+        
         const nextGameNumber = updatedGames.length + 1
         const nextFirstServer = getNextGameFirstServer(currentGame.first_server_side)
 
@@ -375,13 +375,13 @@ export const useTTStore = create<TTState>((set, get) => ({
     const { match, currentGame, scoreEvents, games } = get()
     if (!match || !currentGame) return
 
-    // Get the events for the current game
+    
     const gameEvents = scoreEvents.filter(e => e.game_id === currentGame.id)
     if (gameEvents.length === 0) {
-      // If no events in current game and there are previous games,
-      // we might need to revert to previous game
+      
+      
       if (games.length > 1 && currentGame.score_a === 0 && currentGame.score_b === 0) {
-        // Delete this empty game and reopen previous
+        
         const prevGame = games[games.length - 2]
         await supabase.from('tt_games').delete().eq('id', currentGame.id)
         await supabase.from('tt_games').update({
@@ -389,7 +389,7 @@ export const useTTStore = create<TTState>((set, get) => ({
           completed_at: null,
         }).eq('id', prevGame.id)
 
-        // Now undo the last point of the previous game
+        
         const prevEvents = scoreEvents.filter(e => e.game_id === prevGame.id)
         if (prevEvents.length > 0) {
           const lastEvent = prevEvents[prevEvents.length - 1]
@@ -404,7 +404,7 @@ export const useTTStore = create<TTState>((set, get) => ({
           }).eq('id', prevGame.id)
         }
 
-        // Also reopen match if it was completed
+        
         if (match.status === 'completed') {
           await supabase.from('tt_matches').update({
             status: 'live',
@@ -413,7 +413,7 @@ export const useTTStore = create<TTState>((set, get) => ({
           }).eq('id', match.id)
         }
 
-        // Reload
+        
         await get().loadMatch(match.id)
         return
       }
@@ -422,14 +422,14 @@ export const useTTStore = create<TTState>((set, get) => ({
 
     const lastEvent = gameEvents[gameEvents.length - 1]
 
-    // Delete the event
+    
     await supabase.from('tt_score_events').delete().eq('id', lastEvent.id)
 
-    // Calculate new score
+    
     const newScoreA = lastEvent.score_a_after - (lastEvent.scoring_side === 'A' ? 1 : 0)
     const newScoreB = lastEvent.score_b_after - (lastEvent.scoring_side === 'B' ? 1 : 0)
 
-    // Update game
+    
     await supabase.from('tt_games').update({
       score_a: newScoreA,
       score_b: newScoreB,
@@ -437,7 +437,7 @@ export const useTTStore = create<TTState>((set, get) => ({
       completed_at: null,
     }).eq('id', currentGame.id)
 
-    // If match was completed, reopen
+    
     if (match.status === 'completed') {
       await supabase.from('tt_matches').update({
         status: 'live',
@@ -446,7 +446,7 @@ export const useTTStore = create<TTState>((set, get) => ({
       }).eq('id', match.id)
     }
 
-    // Reload all state
+    
     await get().loadMatch(match.id)
   },
 

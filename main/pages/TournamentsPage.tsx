@@ -41,7 +41,7 @@ export function TournamentsListPage() {
   useEffect(() => {
     fetchTournaments()
 
-    // Realtime subscription so deletions/updates propagate to all viewers
+    
     const channel = supabase
       .channel('tournaments-list')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tournaments' }, () => {
@@ -59,7 +59,7 @@ export function TournamentsListPage() {
       .select('*')
       .order('created_at', { ascending: false })
     if (data) {
-      // Fetch organizer names separately
+      
       const organizerIds = [...new Set(data.map((t: any) => t.organizer_id))]
       const { data: organizers } = await supabase
         .from('profiles')
@@ -75,18 +75,18 @@ export function TournamentsListPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      // Must delete in correct order due to FK constraints:
-      // innings.batting_team_id/bowling_team_id -> teams (no CASCADE)
-      // So we delete matches first (cascades to innings -> ball_events, playing_xi)
-      // Then delete player_stats, then the tournament itself (cascades to teams -> players)
+      
+      
+      
+      
 
-      // 1. Delete all matches for this tournament (cascades to innings, ball_events, playing_xi)
+      
       await supabase.from('matches').delete().eq('tournament_id', id)
 
-      // 2. Delete player_stats for this tournament
+      
       await supabase.from('player_stats').delete().eq('tournament_id', id)
 
-      // 3. Now delete the tournament (cascades to teams -> players)
+      
       const { error } = await supabase.from('tournaments').delete().eq('id', id).eq('organizer_id', profile?.id || '')
       if (!error) {
         setTournaments((prev) => prev.filter((t) => t.id !== id))

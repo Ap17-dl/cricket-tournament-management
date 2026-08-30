@@ -61,7 +61,7 @@ function OverTracker({ balls }: { balls: BallEvent[] }) {
   )
 }
 
-// ===================== SCORING BUTTON =====================
+
 function ScoringButton({
   label,
   onClick,
@@ -113,8 +113,8 @@ function ScorecardTab({ innings, players }: { innings: Innings | null; players: 
       if (!batsmenMap[b.batsman_id]) batsmenMap[b.batsman_id] = { runs: 0, balls: 0, fours: 0, sixes: 0, out: false }
       const bm = batsmenMap[b.batsman_id]
       if (b.extra_type !== 'wide') bm.balls++
-      // Only runs off the bat (from normal balls or no-balls) go to the batsman.
-      // Wides, Byes, and Leg Byes go to the team as extras.
+      
+      
       if (b.extra_type === null || b.extra_type === 'no_ball') {
         bm.runs += b.runs
         if (b.runs === 4) bm.fours++
@@ -127,7 +127,7 @@ function ScorecardTab({ innings, players }: { innings: Innings | null; players: 
       if (!bowlersMap[b.bowler_id]) bowlersMap[b.bowler_id] = { overs: 0, balls: 0, maidens: 0, runs: 0, wickets: 0 }
       const bw = bowlersMap[b.bowler_id]
       if (!b.extra_type || b.extra_type === 'bye' || b.extra_type === 'leg_bye') bw.balls++
-      // Bowler runs conceded: runs off bat + wides/no-balls. Byes and Leg Byes are NOT conceded by the bowler.
+      
       const bowlerRunsConceded = (b.extra_type === 'bye' || b.extra_type === 'leg_bye') ? 0 : (b.runs + b.extra_runs)
       bw.runs += bowlerRunsConceded
       if (b.is_wicket && b.wicket_type !== 'run_out') bw.wickets++

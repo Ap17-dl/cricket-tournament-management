@@ -41,7 +41,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  /* Cricket custom tokens */
+  
   --color-cricket-green: var(--cricket-green);
   --color-cricket-green-foreground: var(--cricket-green-foreground);
   --color-cricket-red: var(--cricket-red);
@@ -144,7 +144,7 @@
   }
 }
 
-/* Over tracker ball animation */
+
 @keyframes ball-fill {
   from { transform: scale(0.6); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
@@ -154,7 +154,7 @@
   animation: ball-fill 0.2s ease-out;
 }
 
-/* Live pulse for live matches */
+
 @keyframes live-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
@@ -164,7 +164,7 @@
   animation: live-pulse 1.5s ease-in-out infinite;
 }
 
-/* Skeuomorphic Utilities */
+
 @layer utilities {
   .shadow-skeuo {
     box-shadow: 
@@ -209,7 +209,7 @@
   }
 }
 
-/* Dark mode specific overrides for skeuomorphism */
+
 [data-theme="test"] .shadow-skeuo,
 .dark .shadow-skeuo {
   box-shadow: 

@@ -112,7 +112,7 @@ export function CareersPage() {
     setSubmitting(true)
 
     try {
-      // 1. Upload resume to Supabase Storage
+      
       let resume_url: string | null = null
       if (resumeFile) {
         const ext = resumeFile.name.split('.').pop()

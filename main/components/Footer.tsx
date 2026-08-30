@@ -36,10 +36,10 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border bg-card/50 backdrop-blur-sm mt-auto">
-      {/* Main footer content */}
+      {}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
-          {/* Brand column */}
+          {}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2.5 group">
               <img
@@ -70,7 +70,7 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Cricket Module Links */}
+          {}
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider flex items-center gap-2">
               <span className="size-2 rounded-full bg-emerald-500 inline-block" />
@@ -91,7 +91,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Table Tennis Module Links */}
+          {}
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider flex items-center gap-2">
               <span className="size-2 rounded-full bg-blue-500 inline-block" />
@@ -112,7 +112,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Careers & Opportunities */}
+          {}
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider flex items-center gap-2">
               <span className="size-2 rounded-full bg-primary inline-block" />
@@ -146,7 +146,7 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom bar */}
+      {}
       <div className="border-t border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <p>

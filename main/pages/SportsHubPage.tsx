@@ -148,7 +148,7 @@ export function SportsHubPage() {
 
   return (
     <div className="min-h-svh bg-slate-50/70 text-slate-900 flex flex-col selection:bg-emerald-500/20 selection:text-emerald-900">
-      {/* AceCourt Top Navigation Bar */}
+      {}
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
@@ -206,11 +206,11 @@ export function SportsHubPage() {
         </div>
       </header>
 
-      {/* Main AceCourt Hub Content */}
+      {}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 flex-1 w-full space-y-12">
-        {/* AceCourt Athletic Hero Section */}
+        {}
         <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-slate-900 p-8 sm:p-12 text-white shadow-xl">
-          {/* Subtle Court Line Graphic Overlay */}
+          {}
           <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-10 pointer-events-none border-l-2 border-dashed border-white" />
           <div className="absolute -right-16 -bottom-16 size-80 rounded-full border-8 border-white/5 pointer-events-none" />
 
@@ -228,7 +228,7 @@ export function SportsHubPage() {
               Create official tournaments, auto-generate round-robin fixtures, score live matches ball-by-ball or point-by-point, and view player statistics and standings.
             </p>
 
-            {/* AceCourt Metric Highlights */}
+            {}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-white/15">
               <div className="space-y-0.5">
                 <p className="text-[11px] font-medium uppercase tracking-wider text-emerald-300/80">Tournaments</p>
@@ -258,7 +258,7 @@ export function SportsHubPage() {
           </div>
         </section>
 
-        {/* Primary Sports Event Hubs (AceCourt Cards) */}
+        {}
         <section className="space-y-5">
           <div className="flex items-center justify-between">
             <div>
@@ -272,7 +272,7 @@ export function SportsHubPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Cricket Event Card */}
+            {}
             <Card className="rounded-3xl border border-slate-200/80 bg-white hover:border-emerald-500/40 hover:shadow-xl transition-all duration-300 overflow-hidden group flex flex-col justify-between">
               <div className="h-2 w-full bg-gradient-to-r from-emerald-500 to-teal-600" />
 
@@ -299,7 +299,7 @@ export function SportsHubPage() {
                   Ball-by-ball live scorekeeper, custom overs, playing XI rosters, wagon wheel boundary tracking, bowler economy rates, and Cricbuzz-inspired match centre.
                 </p>
 
-                {/* Event Highlights Strip */}
+                {}
                 <div className="grid grid-cols-3 gap-2.5 py-3 border-y border-slate-100 text-center font-mono">
                   <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                     <p className="text-sm font-bold text-slate-900 tabular-nums">{stats.cricketTournaments}</p>
@@ -315,7 +315,7 @@ export function SportsHubPage() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
+                {}
                 <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
                   <Link to="/cricket" className="w-full sm:flex-1">
                     <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl h-11 gap-2 shadow-md shadow-emerald-600/20">
@@ -338,7 +338,7 @@ export function SportsHubPage() {
               </CardContent>
             </Card>
 
-            {/* Table Tennis Event Card */}
+            {}
             <Card className="rounded-3xl border border-slate-200/80 bg-white hover:border-blue-500/40 hover:shadow-xl transition-all duration-300 overflow-hidden group flex flex-col justify-between">
               <div className="h-2 w-full bg-gradient-to-r from-blue-500 to-cyan-500" />
 
@@ -365,7 +365,7 @@ export function SportsHubPage() {
                   Automated round-robin fixture generator, 11 & 21 point formats with 5-serve cycles, deuce alternations, deciding game side-switch, and live standings.
                 </p>
 
-                {/* Event Highlights Strip */}
+                {}
                 <div className="grid grid-cols-3 gap-2.5 py-3 border-y border-slate-100 text-center font-mono">
                   <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                     <p className="text-sm font-bold text-slate-900 tabular-nums">{stats.ttTournaments}</p>
@@ -381,7 +381,7 @@ export function SportsHubPage() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
+                {}
                 <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
                   <Link to="/table-tennis" className="w-full sm:flex-1">
                     <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl h-11 gap-2 shadow-md shadow-blue-600/20">
@@ -406,7 +406,7 @@ export function SportsHubPage() {
           </div>
         </section>
 
-        {/* AceCourt Upcoming Sports Pipeline */}
+        {}
         <section className="space-y-4 pt-2">
           <div className="flex items-center justify-between">
             <div>

@@ -13,7 +13,7 @@ import { StatsPage } from '@/pages/StatsPage'
 import { CareersPage } from '@/pages/CareersPage'
 import { SportsHubPage } from '@/pages/SportsHubPage'
 
-// Table Tennis imports
+
 import { TTLayout } from '@/components/TTLayout'
 import { TTHomePage } from '@/pages/table-tennis/TTHomePage'
 import { TTQuickMatchPage } from '@/pages/table-tennis/TTQuickMatchPage'
@@ -33,7 +33,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isMounted = true
 
-    // Safety timeout: ensure loading state never hangs indefinitely
+    
     const safetyTimer = setTimeout(() => {
       if (isMounted) setLoading(false)
     }, 1500)
@@ -103,10 +103,10 @@ export function App() {
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
           
-          {/* Main Sports Selection Hub */}
+          {}
           <Route path="/" element={<SportsHubPage />} />
 
-          {/* Cricket routes */}
+          {}
           <Route element={<Layout />}>
             <Route path="/cricket" element={<HomePage />} />
             <Route path="/tournaments" element={<TournamentsListPage />} />
@@ -119,7 +119,7 @@ export function App() {
             <Route path="/stats" element={<StatsPage />} />
             <Route path="/careers" element={<CareersPage />} />
           </Route>
-          {/* Table Tennis routes */}
+          {}
           <Route path="/table-tennis" element={<TTLayout />}>
             <Route index element={<TTHomePage />} />
             <Route path="tournaments" element={<TTTournamentsPage />} />

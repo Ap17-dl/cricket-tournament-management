@@ -175,9 +175,9 @@ export interface ScoringState {
   extras: number
 }
 
-// =============================================
-// Table Tennis Types
-// =============================================
+
+
+
 
 export type TTMatchType = 'singles' | 'doubles'
 export type TTMatchFormat = 11 | 21
@@ -224,7 +224,7 @@ export interface TTMatch {
   created_at: string
   updated_at: string
   tournament_id?: string | null
-  // Joined relations
+  
   players?: TTMatchPlayer[]
   games?: TTGame[]
   tournament?: TTTournament
@@ -237,7 +237,7 @@ export interface TTMatchPlayer {
   player_id: string
   player_name: string
   player_order: number
-  // Joined
+  
   player?: TTPlayer
 }
 
@@ -251,7 +251,7 @@ export interface TTGame {
   first_server_side: TTSide
   started_at: string
   completed_at?: string
-  // Joined
+  
   score_events?: TTScoreEvent[]
 }
 

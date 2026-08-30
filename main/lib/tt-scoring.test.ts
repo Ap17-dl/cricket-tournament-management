@@ -1,7 +1,7 @@
-// =============================================
-// Table Tennis Scoring Engine — Tests
-// =============================================
-// Run with: npx tsx main/lib/tt-scoring.test.ts
+
+
+
+
 
 import {
   calculateGameStatus,

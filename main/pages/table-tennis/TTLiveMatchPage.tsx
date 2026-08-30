@@ -33,7 +33,7 @@ export function TTLiveMatchPage() {
     if (matchId) loadMatch(matchId)
   }, [matchId, loadMatch])
 
-  // Realtime subscription
+  
   useEffect(() => {
     if (!matchId) return
 

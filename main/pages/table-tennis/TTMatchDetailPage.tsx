@@ -65,7 +65,7 @@ export function TTMatchDetailPage() {
   const gamesWonB = sortedGames.filter(g => g.winner_side === 'B').length
   const isAWinner = match.winner_side === 'A'
 
-  // Duration
+  
   let duration = ''
   if (match.started_at && match.completed_at) {
     const ms = new Date(match.completed_at).getTime() - new Date(match.started_at).getTime()

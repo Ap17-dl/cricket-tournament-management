@@ -64,7 +64,7 @@ export function Navbar() {
       )}
     >
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-        {/* Logo and Back to Hub */}
+        {}
         <div className="flex items-center gap-2.5 shrink-0">
           <Link
             to="/"
@@ -81,7 +81,7 @@ export function Navbar() {
           </Link>
         </div>
 
-        {/* Nav Links */}
+        {}
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map(({ to, label, icon: Icon }) => (
             <Link
@@ -100,7 +100,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Right side */}
+        {}
         <div className="flex items-center gap-2">
           {profile?.role === 'organizer' && (
             <Link to="/tournaments/new">
@@ -172,7 +172,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile nav */}
+      {}
       <div className="md:hidden border-t flex">
         {navLinks.map(({ to, label, icon: Icon }) => (
           <Link

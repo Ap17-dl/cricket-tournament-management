@@ -67,7 +67,7 @@ export function MatchesListPage() {
         </div>
       </div>
 
-      {/* Filter tabs */}
+      {}
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {STATUS_FILTERS.map((s) => (
           <button
