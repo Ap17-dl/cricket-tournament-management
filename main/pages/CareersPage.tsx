@@ -178,7 +178,7 @@ export function CareersPage() {
         </div>
         <h1 className="text-3xl font-bold tracking-tight mb-3">Application Received!</h1>
         <p className="text-muted-foreground max-w-md mx-auto mb-8">
-          Thank you for your interest in joining Local Tournament. We'll review your application and get back to you soon.
+          Thank you for your interest in joining Tournova. We'll review your application and get back to you soon.
         </p>
         <div className="flex items-center justify-center gap-3">
           <Link to="/">
@@ -378,7 +378,7 @@ export function CareersPage() {
                   <Textarea
                     id="cover_letter"
                     name="cover_letter"
-                    placeholder="Tell us why you'd be a great fit for this role, your relevant experience, and what excites you about Local Tournament..."
+                    placeholder="Tell us why you'd be a great fit for this role, your relevant experience, and what excites you about Tournova..."
                     rows={6}
                     className="resize-none"
                     value={formData.cover_letter}

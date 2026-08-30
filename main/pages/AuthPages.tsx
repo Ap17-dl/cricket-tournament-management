@@ -51,8 +51,8 @@ export function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-3 mb-4">
-            <img src="/logo.png" alt="Local Tournament Logo" className="size-25 object-contain drop-shadow-lg" />
-            <span className="text-3xl font-extrabold tracking-tight text-white drop-shadow-md">Local Tournament</span>
+            <img src="/logo.png" alt="Tournova Logo" className="size-25 object-contain drop-shadow-lg" />
+            <span className="text-3xl font-extrabold tracking-tight text-white drop-shadow-md">Tournova</span>
           </div>
           <p className="text-white/90 text-sm drop-shadow-sm font-medium">Manage tournaments. Score matches. Track stats.</p>
         </div>
@@ -188,8 +188,8 @@ export function SignupPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-3 mb-4">
-            <img src="/logo.png" alt="Local Tournament Logo" className="size-20 object-contain drop-shadow-lg" />
-            <span className="text-5xl font-extrabold tracking-tight text-white drop-shadow-md">Local Tournament</span>
+            <img src="/logo.png" alt="Tournova Logo" className="size-20 object-contain drop-shadow-lg" />
+            <span className="text-5xl font-extrabold tracking-tight text-white drop-shadow-md">Tournova</span>
           </div>
           <p className="text-white/90 text-sm drop-shadow-sm font-medium">Your all-in-one sports tournament platform</p>
         </div>

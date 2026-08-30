@@ -76,7 +76,7 @@ export function Navbar() {
           </Link>
           <span className="text-border">|</span>
           <Link to="/cricket" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Local Tournament Logo" className="size-7 object-contain" />
+            <img src="/logo.png" alt="Tournova Logo" className="size-7 object-contain" />
             <span className="font-bold text-base tracking-tight hidden sm:block">Cricket</span>
           </Link>
         </div>

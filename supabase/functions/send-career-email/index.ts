@@ -30,7 +30,7 @@ Deno.serve(async (req: Request) => {
       <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #166534, #15803d); padding: 24px; border-radius: 12px 12px 0 0;">
           <h1 style="color: white; margin: 0; font-size: 22px;">New Career Application</h1>
-          <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 14px;">Local Tournament - ${position}</p>
+          <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 14px;">Tournova - ${position}</p>
         </div>
         <div style="background: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
           <table style="width: 100%; border-collapse: collapse;">
@@ -64,7 +64,7 @@ Deno.serve(async (req: Request) => {
           <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
             <p style="font-size: 14px; line-height: 1.7; color: #374151; margin: 0; white-space: pre-wrap;">${cover_letter}</p>
           </div>
-          <p style="color: #9ca3af; font-size: 11px; margin-top: 20px; text-align: center;">This email was sent from the Local Tournament careers page</p>
+          <p style="color: #9ca3af; font-size: 11px; margin-top: 20px; text-align: center;">This email was sent from the Tournova careers page</p>
         </div>
       </div>
     `;
@@ -76,7 +76,7 @@ Deno.serve(async (req: Request) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Local Tournament Careers <onboarding@resend.dev>',
+        from: 'Tournova Careers <onboarding@resend.dev>',
         to: [RECIPIENT_EMAIL],
         subject: `New Application: ${position} - ${full_name}`,
         html: htmlBody,

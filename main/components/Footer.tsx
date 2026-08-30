@@ -44,11 +44,11 @@ export function Footer() {
             <Link to="/" className="flex items-center gap-2.5 group">
               <img
                 src="/logo.png"
-                alt="Local Tournament Logo"
+                alt="Tournova Logo"
                 className="size-9 object-contain transition-transform group-hover:scale-105"
               />
               <span className="font-bold text-xl tracking-tight text-foreground">
-                Local Tournament
+                Tournova
               </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -150,7 +150,7 @@ export function Footer() {
       <div className="border-t border-border">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <p>
-            © {currentYear} Local Tournament. All-in-One Multi-Sport Management Platform.
+            © {currentYear} Tournova. All-in-One Multi-Sport Management Platform.
           </p>
           <div className="flex items-center gap-4">
             <Link to="/" className="hover:text-foreground transition-colors">

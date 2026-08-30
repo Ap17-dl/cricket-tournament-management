@@ -157,7 +157,7 @@ export function SportsHubPage() {
             </div>
             <div>
               <span className="font-extrabold text-lg tracking-tight text-slate-900 flex items-center gap-1.5">
-                AceCourt <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Tournaments</span>
+                Tournova <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Tournaments</span>
               </span>
             </div>
           </Link>

@@ -20,7 +20,7 @@ export function TTLayout() {
   const location = useLocation()
 
   useEffect(() => {
-    document.title = 'Table Tennis — Local Tournament'
+    document.title = 'Table Tennis — Tournova'
   }, [])
 
   if (loading) {
@@ -50,10 +50,10 @@ export function TTLayout() {
             <a
               href="/"
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              title="Back to Local Tournament"
+              title="Back to Tournova"
             >
               <ArrowLeft className="size-4" />
-              <span className="hidden sm:inline">Local Tournament</span>
+              <span className="hidden sm:inline">Tournova</span>
             </a>
             <span className="text-border">|</span>
             <Link to="/table-tennis" className="flex items-center gap-2">
