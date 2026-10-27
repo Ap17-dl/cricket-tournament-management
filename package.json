@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc --noEmit",
+    "test:cricket": "npx tsx tests/cricket-scoring.test.ts",
+    "test:tt": "npx tsx main/lib/tt-scoring.test.ts",
+    "test": "npx tsx tests/cricket-scoring.test.ts && npx tsx main/lib/tt-scoring.test.ts",
     "preview": "vite preview",
     "supabase:deploy": "supabase functions deploy send-career-email --project-ref jzpsjffsytkbvuqwlypc"
   },

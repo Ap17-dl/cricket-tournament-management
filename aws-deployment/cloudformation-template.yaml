@@ -1,0 +1,281 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  AWS CloudFormation template for Local Tournament Cricket Management Platform.
+  Deploys secure S3 web hosting (with direct S3 Static Website Hosting or CloudFront CDN with OAC),
+  SPA fallback routing (403/404 -> index.html), monitoring, and operational alerts.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: cricket-tournament
+    Description: Name of the project used for naming and tagging resources.
+    AllowedPattern: '^[a-z0-9\-]+$'
+    ConstraintDescription: Must contain only lowercase alphanumeric characters and hyphens.
+
+  Environment:
+    Type: String
+    Default: demo
+    AllowedValues:
+      - demo
+      - dev
+      - staging
+      - prod
+    Description: Target deployment environment.
+
+  EnableCloudFront:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: Set to 'true' if your AWS account has CloudFront verified by AWS Support. Default 'false' uses S3 Website Hosting for instant deployment.
+
+  AlertEmail:
+    Type: String
+    Default: ''
+    Description: Optional email address to receive CloudWatch alarm notifications via SNS.
+
+  PriceClass:
+    Type: String
+    Default: PriceClass_100
+    AllowedValues:
+      - PriceClass_100
+      - PriceClass_200
+      - PriceClass_All
+    Description: CloudFront price class (used if EnableCloudFront is true).
+
+Conditions:
+  UseCloudFront: !Equals [!Ref EnableCloudFront, 'true']
+  HasAlertEmail: !Not [!Equals [!Ref AlertEmail, '']]
+  EnableAlertWithCloudFront: !And [!Condition UseCloudFront, !Condition HasAlertEmail]
+
+Resources:
+  # ============================================================================
+  # S3 LOGGING BUCKET (Used when CloudFront is enabled)
+  # ============================================================================
+  LoggingBucket:
+    Type: AWS::S3::Bucket
+    Condition: UseCloudFront
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub '${ProjectName}-${Environment}-logs-${AWS::AccountId}-${AWS::Region}'
+      AccessControl: LogDeliveryWrite
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireOldLogsAfter30Days
+            Status: Enabled
+            ExpirationInDays: 30
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # ============================================================================
+  # S3 APP BUCKET (Hosts compiled React/Vite SPA bundle)
+  # ============================================================================
+  AppBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub '${ProjectName}-${Environment}-site-${AWS::AccountId}-${AWS::Region}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: !If [UseCloudFront, true, false]
+        RestrictPublicBuckets: !If [UseCloudFront, true, false]
+      WebsiteConfiguration:
+        !If
+          - UseCloudFront
+          - !Ref "AWS::NoValue"
+          - IndexDocument: index.html
+            ErrorDocument: index.html
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # ============================================================================
+  # CLOUDFRONT ORIGIN ACCESS CONTROL (OAC) - Conditional
+  # ============================================================================
+  CloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Condition: UseCloudFront
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${ProjectName}-${Environment}-oac'
+        Description: !Sub 'OAC for ${ProjectName} ${Environment} private S3 origin'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # ============================================================================
+  # CLOUDFRONT DISTRIBUTION - Conditional
+  # ============================================================================
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Condition: UseCloudFront
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub '${ProjectName} [${Environment}] Cricket Tournament Platform'
+        DefaultRootObject: index.html
+        PriceClass: !Ref PriceClass
+        HttpVersion: http2and3
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt AppBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+            S3OriginConfig: {}
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 0
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 0
+        Logging:
+          Bucket: !GetAtt LoggingBucket.RegionalDomainName
+          Prefix: cloudfront-access-logs/
+          IncludeCookies: false
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # ============================================================================
+  # S3 BUCKET POLICY
+  # ============================================================================
+  AppBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AppBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          !If
+            - UseCloudFront
+            - - Sid: AllowCloudFrontServicePrincipalReadOnly
+                Effect: Allow
+                Principal:
+                  Service: cloudfront.amazonaws.com
+                Action: s3:GetObject
+                Resource: !Sub '${AppBucket.Arn}/*'
+                Condition:
+                  StringEquals:
+                    AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}'
+            - - Sid: PublicReadForGetBucketObjects
+                Effect: Allow
+                Principal: '*'
+                Action: s3:GetObject
+                Resource: !Sub '${AppBucket.Arn}/*'
+
+  # ============================================================================
+  # MONITORING & ALERTS
+  # ============================================================================
+  AlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${ProjectName}-${Environment}-alerts'
+      DisplayName: Cricket Platform Operational Alerts
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+
+  AlertEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasAlertEmail
+    Properties:
+      TopicArn: !Ref AlertTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  CloudFront5xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: UseCloudFront
+    Properties:
+      AlarmName: !Sub '${ProjectName}-${Environment}-CloudFront-5xxErrorRate'
+      AlarmDescription: 'Alerts when CloudFront 5xx error rate exceeds 5% over 5 minutes'
+      Namespace: AWS/CloudFront
+      MetricName: 5xxErrorRate
+      Dimensions:
+        - Name: DistributionId
+          Value: !Ref Distribution
+        - Name: Region
+          Value: Global
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 5.0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertTopic
+      OKActions:
+        - !Ref AlertTopic
+
+Outputs:
+  WebsiteURL:
+    Description: Public URL for the deployed Cricket Tournament Management platform
+    Value:
+      !If
+        - UseCloudFront
+        - !Sub 'https://${Distribution.DomainName}'
+        - !GetAtt AppBucket.WebsiteURL
+    Export:
+      Name: !Sub '${ProjectName}-${Environment}-WebsiteURL'
+
+  AppBucketName:
+    Description: S3 Bucket hosting application assets
+    Value: !Ref AppBucket
+    Export:
+      Name: !Sub '${ProjectName}-${Environment}-AppBucket'
+
+  AlertTopicArn:
+    Description: ARN of SNS Topic for operational alerts
+    Value: !Ref AlertTopic
+    Export:
+      Name: !Sub '${ProjectName}-${Environment}-AlertTopicArn'

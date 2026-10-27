@@ -3,9 +3,15 @@ logs
 *.log*
 
 node_modules
-*.md
 *.local
 .env*
+!.env.example
 .vscode
-
+*.env
 dist
+
+# Deployment status tracking (internal)
+DEPLOYMENT-STATUS-AND-ROADMAP.md
+
+# OS metadata
+.DS_Store

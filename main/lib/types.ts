@@ -120,9 +120,9 @@ export interface BallEvent {
   batsman_id?: string
   bowler_id?: string
   runs: number
-  extra_type?: ExtraType
+  extra_type?: ExtraType | null
   extra_runs: number
-  wicket_type?: WicketType
+  wicket_type?: WicketType | null
   fielder_id?: string
   is_wicket: boolean
   commentary?: string
