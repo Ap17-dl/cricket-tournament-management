@@ -12,6 +12,7 @@ import { MatchesListPage } from '@/pages/MatchesListPage'
 import { StatsPage } from '@/pages/StatsPage'
 import { CareersPage } from '@/pages/CareersPage'
 import { SportsHubPage } from '@/pages/SportsHubPage'
+import { LandingPage } from '@/pages/LandingPage'
 
 
 import { TTLayout } from '@/components/TTLayout'
@@ -103,8 +104,11 @@ export function App() {
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
           
-          {}
-          <Route path="/" element={<SportsHubPage />} />
+          {/* Sports Tournament Landing Page */}
+          <Route path="/" element={<LandingPage />} />
+
+          {/* All Sports Hub */}
+          <Route path="/hub" element={<SportsHubPage />} />
 
           {}
           <Route element={<Layout />}>

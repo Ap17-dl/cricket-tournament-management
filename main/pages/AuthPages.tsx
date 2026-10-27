@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
+import { ArrowLeft } from 'lucide-react'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -24,7 +25,7 @@ export function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      navigate('/')
+      navigate('/hub')
     }
   }
 
@@ -49,14 +50,25 @@ export function LoginPage() {
     >
       <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" />
       <div className="w-full max-w-md relative z-10">
+        {/* Back to landing page */}
+        <div className="mb-4">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/80 hover:text-white transition-colors px-3 py-1.5 rounded-full bg-black/40 border border-white/20 backdrop-blur-md"
+          >
+            <ArrowLeft className="size-3.5" />
+            <span>Back to Home</span>
+          </Link>
+        </div>
+
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-3 mb-4">
-            <img src="/logo.png" alt="Tournova Logo" className="size-25 object-contain drop-shadow-lg" />
-            <span className="text-3xl font-extrabold tracking-tight text-white drop-shadow-md">Tournova</span>
+            <img src="/logo.png" alt="Tournova Logo" className="size-20 sm:size-24 object-contain drop-shadow-lg" />
+            <span className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white drop-shadow-md">Tournova</span>
           </div>
           <p className="text-white/90 text-sm drop-shadow-sm font-medium">Manage tournaments. Score matches. Track stats.</p>
         </div>
-        <Card className="!bg-white/80 backdrop-blur-xl border-white/40 shadow-2xl">
+        <Card className="!bg-white/85 dark:!bg-slate-900/90 backdrop-blur-xl border-white/40 shadow-2xl">
           <CardHeader>
             <CardTitle className="text-xl">Welcome back</CardTitle>
             <CardDescription>Sign in to your account</CardDescription>
@@ -161,7 +173,7 @@ export function SignupPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      navigate('/')
+      navigate('/hub')
     }
   }
 
@@ -186,14 +198,25 @@ export function SignupPage() {
     >
       <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px]" />
       <div className="w-full max-w-md relative z-10">
+        {/* Back to landing page */}
+        <div className="mb-4">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/80 hover:text-white transition-colors px-3 py-1.5 rounded-full bg-black/40 border border-white/20 backdrop-blur-md"
+          >
+            <ArrowLeft className="size-3.5" />
+            <span>Back to Home</span>
+          </Link>
+        </div>
+
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-3 mb-4">
-            <img src="/logo.png" alt="Tournova Logo" className="size-20 object-contain drop-shadow-lg" />
-            <span className="text-5xl font-extrabold tracking-tight text-white drop-shadow-md">Tournova</span>
+            <img src="/logo.png" alt="Tournova Logo" className="size-20 sm:size-24 object-contain drop-shadow-lg" />
+            <span className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white drop-shadow-md">Tournova</span>
           </div>
           <p className="text-white/90 text-sm drop-shadow-sm font-medium">Your all-in-one sports tournament platform</p>
         </div>
-        <Card className="!bg-white/80 backdrop-blur-xl border-white/40 shadow-2xl">
+        <Card className="!bg-white/85 dark:!bg-slate-900/90 backdrop-blur-xl border-white/40 shadow-2xl">
           <CardHeader>
             <CardTitle className="text-xl">Create account</CardTitle>
             <CardDescription>Choose your role to get started</CardDescription>

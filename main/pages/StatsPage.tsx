@@ -247,20 +247,22 @@ export function StatsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Player Statistics</h1>
-          <p className="text-muted-foreground text-sm mt-1">Leaderboards, batting, bowling & fielding stats</p>
+          <h1 className="text-3xl font-normal tracking-tight text-stone-100">
+            Player Honors & <span className="font-editorial italic text-[#C5A059]">Statistics</span>
+          </h1>
+          <p className="text-stone-400 text-xs sm:text-sm mt-1">Leaderboards, Orange/Purple caps, strike rates & career bowling records</p>
         </div>
-        <div className="w-full md:w-64">
+        <div className="w-full md:w-72">
           <Select value={selectedTournamentId} onValueChange={setSelectedTournamentId}>
-            <SelectTrigger className="w-full bg-background">
+            <SelectTrigger className="w-full bg-white/[0.04] border-white/[0.08] text-stone-100 rounded-full h-11 text-xs sm:text-sm font-medium">
               <SelectValue placeholder="Select tournament" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#0C1A13] border-white/[0.1] text-stone-200 rounded-2xl">
               {tournaments.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
+                <SelectItem key={t.id} value={t.id} className="text-xs cursor-pointer rounded-xl">
                   {t.name}{t.venue ? ` — ${t.venue}` : ''} ({t.format})
                 </SelectItem>
               ))}
@@ -270,65 +272,95 @@ export function StatsPage() {
       </div>
 
       {/* Leaderboard cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border-l-4 border-l-yellow-500">
-          <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Medal className="size-4 text-yellow-500" />
-              <span className="text-sm font-semibold">Orange Cap</span>
-            </div>
-            {topBatsmen[0] ? (
-              <div>
-                <p className="font-bold text-base">{topBatsmen[0].player?.name}</p>
-                <p className="text-xs text-muted-foreground">{topBatsmen[0].player?.team?.team_name}</p>
-                <p className="text-3xl font-black text-primary tabular-nums mt-1">{topBatsmen[0].runs}</p>
-                <p className="text-xs text-muted-foreground">runs</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Orange Cap */}
+        <div className="rounded-3xl club-card border border-white/[0.08] hover:border-[#C5A059]/40 club-card-hover p-6 space-y-3 relative overflow-hidden group">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-[#C5A059]">
+                <Medal className="size-4" />
               </div>
-            ) : <p className="text-muted-foreground text-sm">No data yet</p>}
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-purple-500">
-          <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Medal className="size-4 text-purple-500" />
-              <span className="text-sm font-semibold">Purple Cap</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#C5A059]">Orange Cap</span>
             </div>
-            {topBowlers[0] ? (
-              <div>
-                <p className="font-bold text-base">{topBowlers[0].player?.name}</p>
-                <p className="text-xs text-muted-foreground">{topBowlers[0].player?.team?.team_name}</p>
-                <p className="text-3xl font-black text-cricket-wicket tabular-nums mt-1">{topBowlers[0].wickets}</p>
-                <p className="text-xs text-muted-foreground">wickets</p>
+            <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] text-[#C5A059] border border-[#C5A059]/30">
+              Top Scorer
+            </span>
+          </div>
+          {topBatsmen[0] ? (
+            <div className="space-y-1">
+              <p className="font-semibold text-lg text-stone-100 truncate">{topBatsmen[0].player?.name}</p>
+              <p className="text-xs text-stone-400 truncate">{topBatsmen[0].player?.team?.team_name}</p>
+              <div className="pt-2 flex items-baseline gap-2">
+                <span className="font-editorial text-3xl sm:text-4xl font-normal text-[#C5A059] tabular-nums">
+                  {topBatsmen[0].runs}
+                </span>
+                <span className="text-xs text-stone-400 font-medium">runs in tournament</span>
               </div>
-            ) : <p className="text-muted-foreground text-sm">No data yet</p>}
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-green-500">
-          <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="size-4 text-green-500" />
-              <span className="text-sm font-semibold">Best Strike Rate</span>
             </div>
-            {topSR[0] ? (
-              <div>
-                <p className="font-bold text-base">{topSR[0].player?.name}</p>
-                <p className="text-xs text-muted-foreground">{topSR[0].player?.team?.team_name}</p>
-                <p className="text-3xl font-black text-green-600 tabular-nums mt-1">
+          ) : <p className="text-stone-500 text-xs py-2">No stats recorded yet</p>}
+        </div>
+
+        {/* Purple Cap */}
+        <div className="rounded-3xl club-card border border-white/[0.08] hover:border-[#C5A059]/40 club-card-hover p-6 space-y-3 relative overflow-hidden group">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-emerald-400">
+                <Medal className="size-4" />
+              </div>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-400">Purple Cap</span>
+            </div>
+            <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] text-emerald-300 border border-emerald-700/40">
+              Top Bowler
+            </span>
+          </div>
+          {topBowlers[0] ? (
+            <div className="space-y-1">
+              <p className="font-semibold text-lg text-stone-100 truncate">{topBowlers[0].player?.name}</p>
+              <p className="text-xs text-stone-400 truncate">{topBowlers[0].player?.team?.team_name}</p>
+              <div className="pt-2 flex items-baseline gap-2">
+                <span className="font-editorial text-3xl sm:text-4xl font-normal text-emerald-300 tabular-nums">
+                  {topBowlers[0].wickets}
+                </span>
+                <span className="text-xs text-stone-400 font-medium">wickets taken</span>
+              </div>
+            </div>
+          ) : <p className="text-stone-500 text-xs py-2">No stats recorded yet</p>}
+        </div>
+
+        {/* Best Strike Rate */}
+        <div className="rounded-3xl club-card border border-white/[0.08] hover:border-[#C5A059]/40 club-card-hover p-6 space-y-3 relative overflow-hidden group">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-stone-200">
+                <TrendingUp className="size-4" />
+              </div>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-300">Strike Master</span>
+            </div>
+            <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-white/[0.04] text-stone-300 border border-white/[0.1]">
+              Best SR (10b+)
+            </span>
+          </div>
+          {topSR[0] ? (
+            <div className="space-y-1">
+              <p className="font-semibold text-lg text-stone-100 truncate">{topSR[0].player?.name}</p>
+              <p className="text-xs text-stone-400 truncate">{topSR[0].player?.team?.team_name}</p>
+              <div className="pt-2 flex items-baseline gap-2">
+                <span className="font-editorial text-3xl sm:text-4xl font-normal text-stone-100 tabular-nums">
                   {sr(topSR[0].runs, topSR[0].balls_faced)}
-                </p>
-                <p className="text-xs text-muted-foreground">SR</p>
+                </span>
+                <span className="text-xs text-stone-400 font-medium">strike rate</span>
               </div>
-            ) : <p className="text-muted-foreground text-sm">No data yet</p>}
-          </CardContent>
-        </Card>
+            </div>
+          ) : <p className="text-stone-500 text-xs py-2">No stats recorded yet</p>}
+        </div>
       </div>
 
-      {/* Search */}
+      {/* Search Bar */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-stone-400" />
         <Input
-          className="pl-9"
-          placeholder="Search player or team..."
+          className="pl-11 h-11 bg-white/[0.03] border-white/[0.08] text-stone-100 placeholder:text-stone-500 rounded-full text-xs sm:text-sm focus:border-[#C5A059]/50"
+          placeholder="Search player or team name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -337,55 +369,67 @@ export function StatsPage() {
       {loading ? (
         <div className="animate-pulse space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-12 rounded-lg bg-muted" />
+            <div key={i} className="h-12 rounded-2xl bg-white/[0.02] border border-white/[0.06]" />
           ))}
         </div>
       ) : (
         <Tabs defaultValue="batting">
-          <TabsList>
-            <TabsTrigger value="batting">Batting</TabsTrigger>
-            <TabsTrigger value="bowling">Bowling</TabsTrigger>
+          <TabsList className="bg-white/[0.03] border border-white/[0.08] p-1 rounded-full h-11">
+            <TabsTrigger
+              value="batting"
+              className="data-[state=active]:club-gold-gradient data-[state=active]:text-[#122217] font-semibold text-xs rounded-full px-5 transition-all"
+            >
+              Batting Leaderboard
+            </TabsTrigger>
+            <TabsTrigger
+              value="bowling"
+              className="data-[state=active]:club-gold-gradient data-[state=active]:text-[#122217] font-semibold text-xs rounded-full px-5 transition-all"
+            >
+              Bowling Leaderboard
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="batting" className="mt-4">
-            <div className="rounded-lg border overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/50">
+            <div className="rounded-3xl club-card border border-white/[0.08] overflow-hidden overflow-x-auto">
+              <table className="w-full text-xs sm:text-sm">
+                <thead className="bg-white/[0.02] border-b border-white/[0.06]">
                   <tr>
-                    <th className="text-left p-3 font-semibold text-xs">#</th>
-                    <th className="text-left p-3 font-semibold text-xs">Player</th>
-                    <th className="text-center p-3 font-semibold text-xs">M</th>
-                    <th className="text-center p-3 font-semibold text-xs">Runs</th>
-                    <th className="text-center p-3 font-semibold text-xs">Avg</th>
-                    <th className="text-center p-3 font-semibold text-xs">SR</th>
-                    <th className="text-center p-3 font-semibold text-xs">HS</th>
-                    <th className="text-center p-3 font-semibold text-xs">50s</th>
-                    <th className="text-center p-3 font-semibold text-xs">100s</th>
-                    <th className="text-center p-3 font-semibold text-xs">4s</th>
-                    <th className="text-center p-3 font-semibold text-xs">6s</th>
+                    <th className="text-left p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">#</th>
+                    <th className="text-left p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">Player</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">M</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">Runs</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">Avg</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">SR</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">HS</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">50s</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">100s</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">4s</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">6s</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/[0.04]">
                   {topBatsmen.map((s, i) => (
-                    <tr key={s.id} className={cn('border-t', i < 3 && 'bg-primary/5')}>
-                      <td className="p-3 text-muted-foreground font-medium">{i + 1}</td>
-                      <td className="p-3">
-                        <p className="font-semibold">{s.player?.name}</p>
-                        <p className="text-xs text-muted-foreground">{s.player?.team?.team_name}</p>
+                    <tr key={s.id} className={cn('hover:bg-white/[0.02] transition-colors', i === 0 && 'bg-[#C5A059]/5')}>
+                      <td className="p-3.5 text-stone-400 font-medium">
+                        {i === 0 ? <span className="text-[#C5A059] font-bold">1</span> : i + 1}
                       </td>
-                      <td className="p-3 text-center tabular-nums text-muted-foreground">{s.matches_played}</td>
-                      <td className="p-3 text-center tabular-nums font-bold text-primary">{s.runs}</td>
-                      <td className="p-3 text-center tabular-nums">{avg(s.runs, s.matches_played)}</td>
-                      <td className="p-3 text-center tabular-nums">{sr(s.runs, s.balls_faced)}</td>
-                      <td className="p-3 text-center tabular-nums">{s.highest_score}</td>
-                      <td className="p-3 text-center tabular-nums">{s.fifties}</td>
-                      <td className="p-3 text-center tabular-nums">{s.centuries}</td>
-                      <td className="p-3 text-center tabular-nums">{s.fours}</td>
-                      <td className="p-3 text-center tabular-nums">{s.sixes}</td>
+                      <td className="p-3.5">
+                        <p className="font-semibold text-stone-100">{s.player?.name}</p>
+                        <p className="text-[11px] text-stone-400">{s.player?.team?.team_name}</p>
+                      </td>
+                      <td className="p-3.5 text-center tabular-nums text-stone-400 font-mono">{s.matches_played}</td>
+                      <td className="p-3.5 text-center tabular-nums font-semibold text-[#C5A059] font-mono">{s.runs}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{avg(s.runs, s.matches_played)}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{sr(s.runs, s.balls_faced)}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{s.highest_score}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{s.fifties}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{s.centuries}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{s.fours}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{s.sixes}</td>
                     </tr>
                   ))}
                   {topBatsmen.length === 0 && (
-                    <tr><td colSpan={11} className="p-8 text-center text-muted-foreground">No batting stats yet</td></tr>
+                    <tr><td colSpan={11} className="p-8 text-center text-stone-500">No batting stats yet</td></tr>
                   )}
                 </tbody>
               </table>
@@ -393,38 +437,40 @@ export function StatsPage() {
           </TabsContent>
 
           <TabsContent value="bowling" className="mt-4">
-            <div className="rounded-lg border overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/50">
+            <div className="rounded-3xl club-card border border-white/[0.08] overflow-hidden overflow-x-auto">
+              <table className="w-full text-xs sm:text-sm">
+                <thead className="bg-white/[0.02] border-b border-white/[0.06]">
                   <tr>
-                    <th className="text-left p-3 font-semibold text-xs">#</th>
-                    <th className="text-left p-3 font-semibold text-xs">Player</th>
-                    <th className="text-center p-3 font-semibold text-xs">M</th>
-                    <th className="text-center p-3 font-semibold text-xs">Wkts</th>
-                    <th className="text-center p-3 font-semibold text-xs">Overs</th>
-                    <th className="text-center p-3 font-semibold text-xs">Runs</th>
-                    <th className="text-center p-3 font-semibold text-xs">Eco</th>
-                    <th className="text-center p-3 font-semibold text-xs">Maidens</th>
+                    <th className="text-left p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">#</th>
+                    <th className="text-left p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">Player</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">M</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">Wkts</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">Overs</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">Runs</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">Eco</th>
+                    <th className="text-center p-3.5 font-semibold text-[11px] text-stone-400 uppercase tracking-wider">Maidens</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/[0.04]">
                   {topBowlers.map((s, i) => (
-                    <tr key={s.id} className={cn('border-t', i < 3 && 'bg-primary/5')}>
-                      <td className="p-3 text-muted-foreground font-medium">{i + 1}</td>
-                      <td className="p-3">
-                        <p className="font-semibold">{s.player?.name}</p>
-                        <p className="text-xs text-muted-foreground">{s.player?.team?.team_name}</p>
+                    <tr key={s.id} className={cn('hover:bg-white/[0.02] transition-colors', i === 0 && 'bg-emerald-950/20')}>
+                      <td className="p-3.5 text-stone-400 font-medium">
+                        {i === 0 ? <span className="text-emerald-400 font-bold">1</span> : i + 1}
                       </td>
-                      <td className="p-3 text-center tabular-nums text-muted-foreground">{s.matches_played}</td>
-                      <td className="p-3 text-center tabular-nums font-bold text-cricket-wicket">{s.wickets}</td>
-                      <td className="p-3 text-center tabular-nums">{Number(s.overs_bowled).toFixed(1)}</td>
-                      <td className="p-3 text-center tabular-nums">{s.runs_conceded}</td>
-                      <td className="p-3 text-center tabular-nums">{eco(s.runs_conceded, Number(s.overs_bowled))}</td>
-                      <td className="p-3 text-center tabular-nums">{s.maidens}</td>
+                      <td className="p-3.5">
+                        <p className="font-semibold text-stone-100">{s.player?.name}</p>
+                        <p className="text-[11px] text-stone-400">{s.player?.team?.team_name}</p>
+                      </td>
+                      <td className="p-3.5 text-center tabular-nums text-stone-400 font-mono">{s.matches_played}</td>
+                      <td className="p-3.5 text-center tabular-nums font-semibold text-emerald-400 font-mono">{s.wickets}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{Number(s.overs_bowled).toFixed(1)}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{s.runs_conceded}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{eco(s.runs_conceded, Number(s.overs_bowled))}</td>
+                      <td className="p-3.5 text-center tabular-nums font-mono text-stone-300">{s.maidens}</td>
                     </tr>
                   ))}
                   {topBowlers.length === 0 && (
-                    <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">No bowling stats yet</td></tr>
+                    <tr><td colSpan={8} className="p-8 text-center text-stone-500">No bowling stats yet</td></tr>
                   )}
                 </tbody>
               </table>
@@ -432,7 +478,6 @@ export function StatsPage() {
           </TabsContent>
         </Tabs>
       )}
-
     </div>
   )
 }

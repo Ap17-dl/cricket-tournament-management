@@ -1052,92 +1052,110 @@ export function MatchPage() {
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
       {/* Match Header */}
-      <Card className="overflow-hidden">
-        <div className="bg-primary p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-primary-foreground/20 text-primary-foreground border-0 text-xs">
-                {match.match_type} · {match.format}
-              </Badge>
-              {match.status === 'live' && (
-                <Badge className="bg-cricket-live/30 text-white border-0 text-xs flex items-center gap-1">
-                  <span className="size-1.5 rounded-full bg-white live-indicator inline-block" />
-                  LIVE
+      <Card className="overflow-hidden club-card border border-stone-200/80 shadow-xs bg-white">
+        <div className="bg-white p-5 sm:p-6 border-b border-stone-200/70 relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[radial-gradient(ellipse_at_top_right,rgba(197,160,89,0.06),transparent_70%)] pointer-events-none" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-stone-100 text-stone-700 border border-stone-200 text-[10px] tracking-wider uppercase font-mono px-2.5 py-0.5 rounded-full">
+                  {match.match_type} · {match.format}
                 </Badge>
-              )}
+                {match.status === 'live' && (
+                  <Badge className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] tracking-widest uppercase font-mono px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                    LIVE
+                  </Badge>
+                )}
+              </div>
+              <span className="text-[11px] font-mono tracking-wider uppercase text-stone-500">{match.overs} overs</span>
             </div>
-            <span className="text-xs text-primary-foreground/70">{match.overs} overs</span>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Team A */}
+              <div className={cn(
+                'rounded-2xl p-4 border transition-all',
+                currentInnings?.batting_team_id === teamA?.id 
+                  ? 'bg-amber-50/50 border-[#8C6D2D]/35 shadow-xs' 
+                  : 'bg-stone-50 border-stone-200/80'
+              )}>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <p className="text-stone-900 text-xs font-semibold tracking-wide truncate">{teamA?.team_name}</p>
+                  {currentInnings?.batting_team_id === teamA?.id && (
+                    <span className="text-[10px] text-[#8C6D2D] font-mono uppercase tracking-wider font-semibold">Batting</span>
+                  )}
+                </div>
+                {inns1 ? (
+                  <>
+                    <p className="text-stone-900 font-editorial text-2xl sm:text-3xl font-light tabular-nums leading-none">
+                      {inns1.batting_team_id === teamA?.id ? `${inns1.total_runs}/${inns1.wickets}` :
+                        inns2?.batting_team_id === teamA?.id ? `${inns2.total_runs}/${inns2.wickets}` : '-'}
+                    </p>
+                    <p className="text-stone-500 text-xs font-mono mt-1">
+                      {inns1.batting_team_id === teamA?.id
+                        ? `(${Number(inns1.overs_completed).toFixed(1)} ov)`
+                        : inns2?.batting_team_id === teamA?.id
+                        ? `(${Number(inns2.overs_completed).toFixed(1)} ov)` : ''}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-stone-400 text-sm italic">Yet to bat</p>
+                )}
+              </div>
+
+              {/* Team B */}
+              <div className={cn(
+                'rounded-2xl p-4 border transition-all',
+                currentInnings?.batting_team_id === teamB?.id 
+                  ? 'bg-amber-50/50 border-[#8C6D2D]/35 shadow-xs' 
+                  : 'bg-stone-50 border-stone-200/80'
+              )}>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <p className="text-stone-900 text-xs font-semibold tracking-wide truncate">{teamB?.team_name}</p>
+                  {currentInnings?.batting_team_id === teamB?.id && (
+                    <span className="text-[10px] text-[#8C6D2D] font-mono uppercase tracking-wider font-semibold">Batting</span>
+                  )}
+                </div>
+                {inns1 ? (
+                  <>
+                    <p className="text-stone-900 font-editorial text-2xl sm:text-3xl font-light tabular-nums leading-none">
+                      {inns1.batting_team_id === teamB?.id ? `${inns1.total_runs}/${inns1.wickets}` :
+                        inns2?.batting_team_id === teamB?.id ? `${inns2.total_runs}/${inns2.wickets}` : '-'}
+                    </p>
+                    <p className="text-stone-500 text-xs font-mono mt-1">
+                      {inns1.batting_team_id === teamB?.id
+                        ? `(${Number(inns1.overs_completed).toFixed(1)} ov)`
+                        : inns2?.batting_team_id === teamB?.id
+                        ? `(${Number(inns2.overs_completed).toFixed(1)} ov)` : ''}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-stone-400 text-sm italic">Yet to bat</p>
+                )}
+              </div>
+            </div>
+
+            {/* Result / target */}
+            {match.status === 'completed' && match.result_summary && (
+              <div className="mt-3.5 rounded-xl bg-amber-50 border border-amber-200/80 p-2.5 text-center">
+                <p className="text-stone-900 text-xs sm:text-sm font-semibold tracking-wide">{match.result_summary}</p>
+              </div>
+            )}
+            {runsNeeded !== null && runsNeeded > 0 && (
+              <div className="mt-3.5 rounded-xl bg-emerald-50 border border-emerald-200/80 p-2.5 text-center">
+                <p className="text-stone-900 text-xs sm:text-sm font-medium">
+                  {currentInnings?.batting_team?.team_name} need <span className="text-[#8C6D2D] font-bold">{runsNeeded} runs</span> from {ballsLeft} balls
+                </p>
+                <p className="text-stone-600 text-[11px] font-mono mt-0.5">RRR: {rrr} | CRR: {crr}</p>
+              </div>
+            )}
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Team A */}
-            <div className={cn(
-              'rounded-lg p-3',
-              currentInnings?.batting_team_id === teamA?.id ? 'bg-primary-foreground/15' : 'bg-transparent'
-            )}>
-              <p className="text-primary-foreground/80 text-xs font-medium mb-1">{teamA?.team_name}</p>
-              {inns1 ? (
-                <>
-                  <p className="text-primary-foreground text-2xl font-bold tabular-nums">
-                    {inns1.batting_team_id === teamA?.id ? `${inns1.total_runs}/${inns1.wickets}` :
-                      inns2?.batting_team_id === teamA?.id ? `${inns2.total_runs}/${inns2.wickets}` : '-'}
-                  </p>
-                  <p className="text-primary-foreground/70 text-xs">
-                    {inns1.batting_team_id === teamA?.id
-                      ? `(${Number(inns1.overs_completed).toFixed(1)} ov)`
-                      : inns2?.batting_team_id === teamA?.id
-                      ? `(${Number(inns2.overs_completed).toFixed(1)} ov)` : ''}
-                  </p>
-                </>
-              ) : (
-                <p className="text-primary-foreground/50 text-lg">Yet to bat</p>
-              )}
-            </div>
-
-            <div className={cn(
-              'rounded-lg p-3',
-              currentInnings?.batting_team_id === teamB?.id ? 'bg-primary-foreground/15' : 'bg-transparent'
-            )}>
-              <p className="text-primary-foreground/80 text-xs font-medium mb-1">{teamB?.team_name}</p>
-              {inns1 ? (
-                <>
-                  <p className="text-primary-foreground text-2xl font-bold tabular-nums">
-                    {inns1.batting_team_id === teamB?.id ? `${inns1.total_runs}/${inns1.wickets}` :
-                      inns2?.batting_team_id === teamB?.id ? `${inns2.total_runs}/${inns2.wickets}` : '-'}
-                  </p>
-                  <p className="text-primary-foreground/70 text-xs">
-                    {inns1.batting_team_id === teamB?.id
-                      ? `(${Number(inns1.overs_completed).toFixed(1)} ov)`
-                      : inns2?.batting_team_id === teamB?.id
-                      ? `(${Number(inns2.overs_completed).toFixed(1)} ov)` : ''}
-                  </p>
-                </>
-              ) : (
-                <p className="text-primary-foreground/50 text-lg">Yet to bat</p>
-              )}
-            </div>
-          </div>
-
-          {/* Result / target */}
-          {match.status === 'completed' && match.result_summary && (
-            <div className="mt-3 rounded-lg bg-primary-foreground/10 p-2 text-center">
-              <p className="text-primary-foreground text-sm font-semibold">{match.result_summary}</p>
-            </div>
-          )}
-          {runsNeeded !== null && runsNeeded > 0 && (
-            <div className="mt-3 rounded-lg bg-primary-foreground/10 p-2 text-center">
-              <p className="text-primary-foreground text-sm">
-                {currentInnings?.batting_team?.team_name} need {runsNeeded} runs from {ballsLeft} balls
-              </p>
-              <p className="text-primary-foreground/70 text-xs">RRR: {rrr} | CRR: {crr}</p>
-            </div>
-          )}
         </div>
 
         {/* Toss info */}
         {match.toss_winner_id && (
-          <div className="px-4 py-2 bg-muted/30 text-xs text-muted-foreground text-center">
-            {(match.toss_winner_id === teamA?.id ? teamA?.team_name : teamB?.team_name)} won toss and elected to {match.toss_decision} first
+          <div className="px-4 py-2.5 bg-stone-50 border-t border-stone-200/80 text-[11px] font-medium text-stone-600 text-center tracking-wide">
+            {(match.toss_winner_id === teamA?.id ? teamA?.team_name : teamB?.team_name)} won the toss and elected to {match.toss_decision} first
           </div>
         )}
       </Card>

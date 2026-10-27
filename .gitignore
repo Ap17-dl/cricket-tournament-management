@@ -5,7 +5,7 @@ logs
 node_modules
 *.local
 .env*
-!.env.example
+*.env.example
 .vscode
 *.env
 dist

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import type { Tournament, MatchFormat, MatchTheme } from '@/lib/types'
-import { Trophy, Plus, ChevronRight, Calendar, MapPin, Zap, Edit, Trash2, User } from 'lucide-react'
+import { Trophy, Plus, ChevronRight, Calendar, MapPin, Edit, Trash2, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   AlertDialog,
@@ -99,22 +99,24 @@ export function TournamentsListPage() {
   }
 
   const statusColors: Record<string, string> = {
-    upcoming: 'bg-muted text-muted-foreground',
-    active: 'bg-primary/10 text-primary',
-    completed: 'bg-secondary text-secondary-foreground',
+    upcoming: 'bg-white/[0.04] text-stone-300 border-white/[0.1]',
+    active: 'bg-white/[0.04] text-emerald-400 border-emerald-700/40',
+    completed: 'bg-white/[0.04] text-[#C5A059] border-[#C5A059]/30',
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 font-sans">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Tournaments</h1>
-          <p className="text-muted-foreground text-sm mt-1">Browse and manage cricket tournaments</p>
+          <h1 className="text-3xl font-normal tracking-tight text-stone-100">
+            Cricket <span className="font-editorial italic text-[#C5A059]">Tournaments</span>
+          </h1>
+          <p className="text-stone-400 text-xs sm:text-sm mt-1">Browse active championships, knockout series, and league brackets</p>
         </div>
         {profile?.role === 'organizer' && (
           <Link to="/tournaments/new">
-            <Button className="gap-1.5">
-              <Plus className="size-4" />
+            <Button className="gap-2 club-gold-gradient hover:brightness-105 text-[#142318] font-bold text-xs rounded-full shadow-sm border-0 h-10 px-5">
+              <Plus className="size-4 text-[#142318]" />
               New Tournament
             </Button>
           </Link>
@@ -122,127 +124,108 @@ export function TournamentsListPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="py-8" />
-            </Card>
+            <div key={i} className="h-56 rounded-3xl bg-white/[0.02] border border-white/[0.06] animate-pulse" />
           ))}
         </div>
       ) : tournaments.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {tournaments.map((t) => (
-            <Card
+            <div
               key={t.id}
-              className={cn(
-                'hover:shadow-md transition-shadow',
-                t.format === 'Test Match' ? 'border-l-4 border-l-cricket-red' : 'border-l-4 border-l-cricket-green'
-              )}
+              className="rounded-3xl club-card border border-white/[0.08] hover:border-[#C5A059]/40 club-card-hover p-6 flex flex-col justify-between transition-all duration-300 space-y-5"
             >
-              <CardContent className="pt-5 pb-5">
-                <div className="flex items-start justify-between gap-2 mb-3">
-                  <div className="min-w-0">
-                    <h3 className="font-semibold truncate">{t.name}</h3>
-                  </div>
-                  <Badge className={cn('shrink-0 text-xs capitalize', statusColors[t.status])}>
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-semibold text-lg text-stone-100 truncate">{t.name}</h3>
+                  <Badge className={cn('shrink-0 text-[10px] font-medium capitalize border rounded-full px-2.5 py-0.5', statusColors[t.status])}>
                     {t.status}
                   </Badge>
                 </div>
 
-                <div className="space-y-1 text-xs text-muted-foreground mb-4">
+                <div className="space-y-2 text-xs text-stone-400">
                   {t.venue && (
-                    <div className="flex items-center gap-1.5">
-                      <MapPin className="size-3" />
+                    <div className="flex items-center gap-2">
+                      <MapPin className="size-3.5 text-[#C5A059] shrink-0" />
                       <span className="truncate">{t.venue}</span>
                     </div>
                   )}
                   {t.start_date && (
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="size-3" />
+                    <div className="flex items-center gap-2">
+                      <Calendar className="size-3.5 text-emerald-400 shrink-0" />
                       <span>
                         {new Date(t.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                         {t.end_date && ` — ${new Date(t.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`}
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center gap-1.5">
-                    <Trophy className="size-3" />
-                    <span>{t.format}{t.overs ? ` · ${t.overs} overs` : ''}</span>
+                  <div className="flex items-center gap-2">
+                    <Trophy className="size-3.5 text-[#C5A059] shrink-0" />
+                    <span className="font-medium text-stone-300">{t.format}{t.overs ? ` · ${t.overs} overs` : ''}</span>
                   </div>
                 </div>
 
                 {/* Organizer name */}
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
-                  <User className="size-3" />
-                  <span className="truncate">by {(t as any).organizer?.name || 'Unknown'}</span>
+                <div className="flex items-center gap-2 text-xs text-stone-400 pt-1">
+                  <User className="size-3.5 text-stone-500" />
+                  <span className="truncate">Hosted by <strong className="text-stone-300 font-medium">{(t as any).organizer?.name || 'Organizer'}</strong></span>
                 </div>
+              </div>
 
-                <div className="flex gap-2">
-                  <Link to={`/tournaments/${t.id}`} className="flex-1">
-                    <Button variant="secondary" size="sm" className="w-full gap-1">
-                      View <ChevronRight className="size-3" />
-                    </Button>
-                  </Link>
-                  {profile?.role === 'organizer' && profile.id === t.organizer_id && (
-                    <div className="flex gap-1">
-                      <Link to={`/tournaments/${t.id}/edit`}>
-                        <Button variant="outline" size="icon" className="size-8">
-                          <Edit className="size-3.5" />
+              <div className="flex gap-2 pt-2 border-t border-white/[0.06]">
+                <Link to={`/tournaments/${t.id}`} className="flex-1">
+                  <Button size="sm" className="w-full gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-stone-100 border border-white/[0.08] font-medium text-xs rounded-full h-10 transition-all">
+                    Open Tournament <ChevronRight className="size-3.5" />
+                  </Button>
+                </Link>
+                {profile?.role === 'organizer' && profile.id === t.organizer_id && (
+                  <div className="flex gap-1.5">
+                    <Link to={`/tournaments/${t.id}/edit`}>
+                      <Button variant="outline" size="icon" className="size-10 rounded-xl border-white/15 bg-white/5 hover:bg-white/10 text-slate-300">
+                        <Edit className="size-3.5" />
+                      </Button>
+                    </Link>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="icon" className="size-10 rounded-xl border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400">
+                          <Trash2 className="size-3.5" />
                         </Button>
-                      </Link>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="icon" className="size-8 text-destructive hover:text-destructive">
-                            <Trash2 className="size-3.5" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete tournament?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete "{t.name}" and all associated data. This cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-white hover:bg-destructive/90"
-                              onClick={() => handleDelete(t.id)}
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-[#0F172A] border-white/10 text-white rounded-2xl">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete tournament?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-slate-400">
+                            This will permanently delete &quot;{t.name}&quot; and all associated data. This cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="bg-white/10 border-white/10 text-white hover:bg-white/15 rounded-xl">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-red-600 hover:bg-red-700 text-white rounded-xl"
+                            onClick={() => handleDelete(t.id)}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="py-16 text-center">
-            <Trophy className="size-12 text-muted-foreground/40 mx-auto mb-4" />
-            <h3 className="font-semibold mb-1">No tournaments yet</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              {profile?.role === 'organizer' ? 'Create your first tournament to get started.' : 'No tournaments have been created yet.'}
-            </p>
-            {profile?.role === 'organizer' && (
-              <Link to="/tournaments/new">
-                <Button className="gap-1.5">
-                  <Zap className="size-4" />
-                  Create Tournament
-                </Button>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl sports-glass-card border border-white/10 p-12 text-center space-y-3">
+          <Trophy className="size-10 text-slate-500 mx-auto" />
+          <p className="text-slate-400 text-sm font-medium">No tournaments created yet.</p>
+        </div>
       )}
     </div>
   )
 }
+
 
 interface TournamentFormData {
   name: string

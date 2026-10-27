@@ -34,9 +34,11 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-svh bg-background flex flex-col">
+    <div className="min-h-svh bg-[#FAF9F6] text-stone-900 flex flex-col relative selection:bg-[#C5A059]/25 selection:text-stone-900 font-sans">
+      <div className="fixed inset-0 pointer-events-none sports-radial-bg z-0 opacity-70" />
+      <div className="fixed inset-0 bg-[radial-gradient(rgba(0,0,0,0.03)_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none z-0 opacity-60" />
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full min-h-[calc(100svh-3.5rem)]">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full min-h-[calc(100svh-4rem)] relative z-10">
         <Outlet />
       </main>
       <Footer />

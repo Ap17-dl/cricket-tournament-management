@@ -54,84 +54,84 @@
 
 :root {
   --radius: 0.875rem;
-  --background: oklch(0.985 0.005 240);
-  --foreground: oklch(0.18 0.03 260);
+  --background: oklch(0.985 0.003 80);
+  --foreground: oklch(0.20 0.015 60);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.03 260);
+  --card-foreground: oklch(0.20 0.015 60);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.03 260);
-  --primary: oklch(0.55 0.18 155);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.02 155);
-  --secondary-foreground: oklch(0.35 0.12 155);
-  --muted: oklch(0.96 0.01 240);
-  --muted-foreground: oklch(0.50 0.03 250);
-  --accent: oklch(0.95 0.02 155);
-  --accent-foreground: oklch(0.35 0.12 155);
+  --popover-foreground: oklch(0.20 0.015 60);
+  --primary: oklch(0.22 0.02 60);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.965 0.005 80);
+  --secondary-foreground: oklch(0.25 0.02 60);
+  --muted: oklch(0.965 0.003 80);
+  --muted-foreground: oklch(0.52 0.015 60);
+  --accent: oklch(0.965 0.005 80);
+  --accent-foreground: oklch(0.25 0.02 60);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.01 240);
-  --input: oklch(0.92 0.01 240);
-  --ring: oklch(0.55 0.18 155);
-  --chart-1: oklch(0.55 0.18 155);
-  --chart-2: oklch(0.60 0.16 220);
-  --chart-3: oklch(0.75 0.18 80);
-  --chart-4: oklch(0.55 0.20 280);
-  --chart-5: oklch(0.65 0.22 30);
+  --border: oklch(0.91 0.005 80);
+  --input: oklch(0.91 0.005 80);
+  --ring: oklch(0.70 0.10 75);
+  --chart-1: oklch(0.65 0.12 75);
+  --chart-2: oklch(0.50 0.08 150);
+  --chart-3: oklch(0.70 0.14 80);
+  --chart-4: oklch(0.45 0.10 250);
+  --chart-5: oklch(0.60 0.15 35);
   --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.18 0.03 260);
-  --sidebar-primary: oklch(0.55 0.18 155);
+  --sidebar-foreground: oklch(0.20 0.015 60);
+  --sidebar-primary: oklch(0.22 0.02 60);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.95 0.02 155);
-  --sidebar-accent-foreground: oklch(0.35 0.12 155);
-  --sidebar-border: oklch(0.92 0.01 240);
-  --sidebar-ring: oklch(0.55 0.18 155);
-  --cricket-green: oklch(0.55 0.18 155);
+  --sidebar-accent: oklch(0.965 0.005 80);
+  --sidebar-accent-foreground: oklch(0.25 0.02 60);
+  --sidebar-border: oklch(0.91 0.005 80);
+  --sidebar-ring: oklch(0.70 0.10 75);
+  --cricket-green: oklch(0.38 0.08 145);
   --cricket-green-foreground: oklch(1 0 0);
   --cricket-red: oklch(0.55 0.22 27);
   --cricket-red-foreground: oklch(1 0 0);
-  --cricket-live: oklch(0.55 0.22 155);
-  --cricket-boundary: oklch(0.55 0.18 230);
-  --cricket-six: oklch(0.60 0.20 300);
+  --cricket-live: oklch(0.45 0.12 145);
+  --cricket-boundary: oklch(0.45 0.12 230);
+  --cricket-six: oklch(0.50 0.14 75);
   --cricket-wicket: oklch(0.55 0.22 27);
 }
 
 .dark {
-  --background: oklch(0.14 0.02 245);
-  --foreground: oklch(0.96 0.01 245);
-  --card: oklch(0.18 0.03 245);
-  --card-foreground: oklch(0.96 0.01 245);
-  --popover: oklch(0.18 0.03 245);
-  --popover-foreground: oklch(0.96 0.01 245);
-  --primary: oklch(0.72 0.18 70);
-  --primary-foreground: oklch(0.10 0.02 245);
-  --secondary: oklch(0.24 0.03 245);
-  --secondary-foreground: oklch(0.92 0.02 245);
-  --muted: oklch(0.22 0.03 245);
-  --muted-foreground: oklch(0.68 0.03 245);
-  --accent: oklch(0.24 0.04 245);
-  --accent-foreground: oklch(0.96 0.01 245);
-  --destructive: oklch(0.60 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.28 0.03 245);
-  --input: oklch(0.28 0.03 245);
-  --ring: oklch(0.72 0.18 70);
-  --sidebar: oklch(0.12 0.02 245);
-  --sidebar-foreground: oklch(0.96 0.01 245);
-  --sidebar-primary: oklch(0.72 0.18 70);
-  --sidebar-primary-foreground: oklch(0.10 0.02 245);
-  --sidebar-accent: oklch(0.22 0.03 245);
-  --sidebar-accent-foreground: oklch(0.96 0.01 245);
-  --sidebar-border: oklch(0.28 0.03 245);
-  --sidebar-ring: oklch(0.72 0.18 70);
-  --cricket-green: oklch(0.70 0.18 150);
-  --cricket-green-foreground: oklch(0.10 0.02 245);
-  --cricket-red: oklch(0.60 0.22 25);
-  --cricket-red-foreground: oklch(0.98 0 0);
-  --cricket-live: oklch(0.72 0.19 150);
-  --cricket-boundary: oklch(0.65 0.18 240);
-  --cricket-six: oklch(0.72 0.18 70);
-  --cricket-wicket: oklch(0.60 0.22 25);
+  --background: oklch(0.985 0.003 80);
+  --foreground: oklch(0.20 0.015 60);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.20 0.015 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.20 0.015 60);
+  --primary: oklch(0.22 0.02 60);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.965 0.005 80);
+  --secondary-foreground: oklch(0.25 0.02 60);
+  --muted: oklch(0.965 0.003 80);
+  --muted-foreground: oklch(0.52 0.015 60);
+  --accent: oklch(0.965 0.005 80);
+  --accent-foreground: oklch(0.25 0.02 60);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.91 0.005 80);
+  --input: oklch(0.91 0.005 80);
+  --ring: oklch(0.70 0.10 75);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.20 0.015 60);
+  --sidebar-primary: oklch(0.22 0.02 60);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.965 0.005 80);
+  --sidebar-accent-foreground: oklch(0.25 0.02 60);
+  --sidebar-border: oklch(0.91 0.005 80);
+  --sidebar-ring: oklch(0.70 0.10 75);
+  --cricket-green: oklch(0.38 0.08 145);
+  --cricket-green-foreground: oklch(1 0 0);
+  --cricket-red: oklch(0.55 0.22 27);
+  --cricket-red-foreground: oklch(1 0 0);
+  --cricket-live: oklch(0.45 0.12 145);
+  --cricket-boundary: oklch(0.45 0.12 230);
+  --cricket-six: oklch(0.50 0.14 75);
+  --cricket-wicket: oklch(0.55 0.22 27);
 }
 
 @layer base {
@@ -140,7 +140,10 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', 'Geist', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  h1, h2, h3, h4, .font-heading {
+    font-family: 'Outfit', 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   }
 }
 
@@ -168,33 +171,33 @@
 @layer utilities {
   .shadow-skeuo {
     box-shadow: 
-      4px 4px 10px rgba(0, 0, 0, 0.06),
+      4px 4px 10px rgba(0, 0, 0, 0.04),
       -4px -4px 10px rgba(255, 255, 255, 0.8),
       inset 0 1px 1px rgba(255, 255, 255, 0.6);
   }
 
   .shadow-skeuo-sm {
     box-shadow: 
-      2px 2px 5px rgba(0, 0, 0, 0.06),
+      2px 2px 5px rgba(0, 0, 0, 0.04),
       -2px -2px 5px rgba(255, 255, 255, 0.8),
       inset 0 1px 1px rgba(255, 255, 255, 0.6);
   }
 
   .shadow-skeuo-inner {
     box-shadow: 
-      inset 4px 4px 8px rgba(0, 0, 0, 0.08),
+      inset 4px 4px 8px rgba(0, 0, 0, 0.05),
       inset -4px -4px 8px rgba(255, 255, 255, 0.8);
   }
 
   .shadow-skeuo-inner-sm {
     box-shadow: 
-      inset 2px 2px 4px rgba(0, 0, 0, 0.08),
+      inset 2px 2px 4px rgba(0, 0, 0, 0.05),
       inset -2px -2px 4px rgba(255, 255, 255, 0.8);
   }
 
   .shadow-skeuo-active {
     box-shadow: 
-      inset 2px 2px 5px rgba(0, 0, 0, 0.12),
+      inset 2px 2px 5px rgba(0, 0, 0, 0.08),
       inset -2px -2px 5px rgba(255, 255, 255, 0.6);
   }
 
@@ -213,36 +216,118 @@
 [data-theme="test"] .shadow-skeuo,
 .dark .shadow-skeuo {
   box-shadow: 
-    4px 4px 10px rgba(0, 0, 0, 0.4),
-    -4px -4px 10px rgba(255, 255, 255, 0.03),
-    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    4px 4px 10px rgba(0, 0, 0, 0.04),
+    -4px -4px 10px rgba(255, 255, 255, 0.8),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
 }
 
 [data-theme="test"] .shadow-skeuo-sm,
 .dark .shadow-skeuo-sm {
   box-shadow: 
-    2px 2px 5px rgba(0, 0, 0, 0.4),
-    -2px -2px 5px rgba(255, 255, 255, 0.03),
-    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+    2px 2px 5px rgba(0, 0, 0, 0.04),
+    -2px -2px 5px rgba(255, 255, 255, 0.8),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
 }
 
 [data-theme="test"] .shadow-skeuo-inner,
 .dark .shadow-skeuo-inner {
   box-shadow: 
-    inset 4px 4px 8px rgba(0, 0, 0, 0.5),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.02);
+    inset 4px 4px 8px rgba(0, 0, 0, 0.05),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.8);
 }
 
 [data-theme="test"] .shadow-skeuo-inner-sm,
 .dark .shadow-skeuo-inner-sm {
   box-shadow: 
-    inset 2px 2px 4px rgba(0, 0, 0, 0.5),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+    inset 2px 2px 4px rgba(0, 0, 0, 0.05),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.8);
 }
 
 [data-theme="test"] .shadow-skeuo-active,
 .dark .shadow-skeuo-active {
   box-shadow: 
-    inset 2px 2px 5px rgba(0, 0, 0, 0.6),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+    inset 2px 2px 5px rgba(0, 0, 0, 0.08),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.6);
 }
+
+/* Private Golf Club Minimalist & Sports Tournament UI Utilities - Light Minimalist Luxury */
+.sports-glass,
+.club-glass {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.sports-glass-card,
+.club-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.sports-card-glow,
+.club-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sports-card-glow:hover,
+.club-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(197, 160, 89, 0.5);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.07), 0 0 16px -4px rgba(197, 160, 89, 0.12);
+}
+
+.sports-glow-emerald {
+  box-shadow: 0 0 20px -4px rgba(45, 106, 79, 0.15);
+}
+
+.sports-glow-gold,
+.club-glow-gold {
+  box-shadow: 0 0 20px -4px rgba(197, 160, 89, 0.2);
+}
+
+.sports-glow-cyan {
+  box-shadow: 0 0 20px -4px rgba(52, 211, 153, 0.15);
+}
+
+.sports-radial-bg {
+  background: 
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(212, 175, 55, 0.04), transparent 75%),
+    radial-gradient(ellipse 70% 50% at 90% 90%, rgba(0, 0, 0, 0.02), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 10% 40%, rgba(212, 175, 55, 0.02), transparent 60%);
+}
+
+.club-gold-gradient {
+  background: linear-gradient(135deg, #E6C88D 0%, #C5A059 50%, #9B7B3E 100%);
+}
+
+.club-gold-text {
+  background: linear-gradient(135deg, #8E6E2E 0%, #B8923F 50%, #6E511D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.club-emerald-text {
+  background: linear-gradient(135deg, #1C3829 0%, #2D5840 50%, #152E20 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.font-editorial {
+  font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-serif-luxury {
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+}
+
+@keyframes live-radar {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+
+.animate-radar {
+  animation: live-radar 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+

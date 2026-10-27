@@ -14,8 +14,8 @@ import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import type { Tournament, Team, Player, Match, PointsTableEntry, PlayerRole, BattingStyle } from '@/lib/types'
 import {
-  Trophy, Plus, Users, Calendar, MapPin, Edit, Trash2,
-  ChevronRight, Target, BarChart3, Crown, Medal, Pencil
+  Trophy, Plus, Users, Calendar, Trash2,
+  ChevronRight, BarChart3, Crown, Medal, Pencil
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -527,70 +527,47 @@ export function TournamentDetailPage() {
 
   const isOrganizer = profile?.id === tournament.organizer_id
 
-  const statusColors: Record<string, string> = {
-    upcoming: 'bg-muted/80 text-muted-foreground',
-    active: 'bg-primary/15 text-primary',
-    completed: 'bg-secondary text-secondary-foreground',
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className={cn(
-        'rounded-2xl p-6 relative overflow-hidden',
-        tournament.theme === 'test'
-          ? 'bg-[oklch(0.16_0.03_145)] border border-[oklch(1_0_0/10%)]'
-          : 'bg-primary text-primary-foreground'
-      )}>
+      <div className="rounded-3xl p-6 sm:p-8 relative overflow-hidden club-card border border-stone-200/80 bg-white shadow-xs">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[radial-gradient(ellipse_at_top_right,rgba(197,160,89,0.06),transparent_70%)] pointer-events-none" />
         <div className="relative z-10">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-3">
                 <Badge className={cn(
-                  'text-xs capitalize',
-                  tournament.theme === 'test'
-                    ? 'bg-cricket-red/20 text-cricket-red border-0'
-                    : 'bg-primary-foreground/20 text-primary-foreground border-0',
-                  statusColors[tournament.status]
+                  'text-[10px] tracking-widest uppercase font-mono px-2.5 py-0.5 rounded-full border',
+                  tournament.status === 'active'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : tournament.status === 'completed'
+                    ? 'bg-amber-50 text-[#8C6D2D] border-amber-200'
+                    : 'bg-stone-100 text-stone-600 border-stone-200'
                 )}>
                   {tournament.status}
                 </Badge>
-                <Badge className={cn(
-                  'text-xs',
-                  tournament.theme === 'test'
-                    ? 'bg-cricket-red/20 text-cricket-red border-0'
-                    : 'bg-primary-foreground/20 text-primary-foreground border-0'
-                )}>
+                <Badge className="text-[10px] tracking-wider uppercase font-mono bg-stone-100 text-stone-700 border border-stone-200 px-2.5 py-0.5 rounded-full">
                   {tournament.format}
                 </Badge>
               </div>
-              <h1 className={cn(
-                'text-2xl font-bold tracking-tight',
-                tournament.theme === 'test' ? 'text-foreground' : 'text-primary-foreground'
-              )}>
+              <h1 className="font-editorial text-2xl sm:text-3xl md:text-4xl text-stone-900 font-normal tracking-tight">
                 {tournament.name}
               </h1>
-              <div className={cn(
-                'flex flex-wrap items-center gap-3 mt-2 text-sm',
-                tournament.theme === 'test' ? 'text-muted-foreground' : 'text-primary-foreground/80'
-              )}>
+              <div className="flex flex-wrap items-center gap-3 mt-3 text-xs sm:text-sm text-stone-500 font-normal">
                 {tournament.venue && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="size-3.5" />
-                    {tournament.venue}
-                  </span>
+                  <span>{tournament.venue}</span>
+                )}
+                {tournament.venue && (tournament.start_date || tournament.overs) && (
+                  <span className="text-stone-300">·</span>
                 )}
                 {tournament.start_date && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="size-3.5" />
-                    {new Date(tournament.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </span>
+                  <span>{new Date(tournament.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                )}
+                {tournament.start_date && tournament.overs && (
+                  <span className="text-stone-300">·</span>
                 )}
                 {tournament.overs && (
-                  <span className="flex items-center gap-1">
-                    <Target className="size-3.5" />
-                    {tournament.overs} overs
-                  </span>
+                  <span>{tournament.overs} overs per side</span>
                 )}
               </div>
             </div>
@@ -600,14 +577,8 @@ export function TournamentDetailPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className={cn(
-                      'gap-1.5',
-                      tournament.theme === 'test'
-                        ? 'border-border'
-                        : 'bg-transparent border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10'
-                    )}
+                    className="bg-white border-stone-200 text-stone-700 hover:text-stone-900 hover:border-[#8C6D2D]/40 hover:bg-stone-50 transition-all shadow-xs px-3.5"
                   >
-                    <Edit className="size-3.5" />
                     Edit
                   </Button>
                 </Link>
@@ -615,37 +586,27 @@ export function TournamentDetailPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-4 mt-4">
-            <div className={cn(
-              'text-center',
-              tournament.theme === 'test' ? 'text-foreground' : 'text-primary-foreground'
-            )}>
-              <p className="text-2xl font-bold tabular-nums">{teams.length}</p>
-              <p className="text-xs opacity-70">Teams</p>
+          <div className="flex items-center gap-6 mt-6 pt-5 border-t border-stone-100">
+            <div>
+              <p className="font-editorial text-2xl sm:text-3xl font-light text-stone-900 tabular-nums leading-none">{teams.length}</p>
+              <p className="text-[11px] uppercase tracking-widest text-stone-500 mt-1 font-mono">Teams</p>
             </div>
-            <Separator orientation="vertical" className="h-8 opacity-30" />
-            <div className={cn(
-              'text-center',
-              tournament.theme === 'test' ? 'text-foreground' : 'text-primary-foreground'
-            )}>
-              <p className="text-2xl font-bold tabular-nums">{matches.length}</p>
-              <p className="text-xs opacity-70">Matches</p>
+            <Separator orientation="vertical" className="h-8 bg-stone-200" />
+            <div>
+              <p className="font-editorial text-2xl sm:text-3xl font-light text-stone-900 tabular-nums leading-none">{matches.length}</p>
+              <p className="text-[11px] uppercase tracking-widest text-stone-500 mt-1 font-mono">Matches</p>
             </div>
             {tournament.prize_pool && (
               <>
-                <Separator orientation="vertical" className="h-8 opacity-30" />
-                <div className={cn(
-                  'text-center',
-                  tournament.theme === 'test' ? 'text-foreground' : 'text-primary-foreground'
-                )}>
-                  <p className="text-lg font-bold">{tournament.prize_pool}</p>
-                  <p className="text-xs opacity-70">Prize Pool</p>
+                <Separator orientation="vertical" className="h-8 bg-stone-200" />
+                <div>
+                  <p className="font-editorial text-2xl sm:text-3xl font-light text-[#8C6D2D] leading-none">{tournament.prize_pool}</p>
+                  <p className="text-[11px] uppercase tracking-widest text-stone-500 mt-1 font-mono">Prize Pool</p>
                 </div>
               </>
             )}
           </div>
         </div>
-        <div className="absolute -right-8 -bottom-8 size-40 rounded-full border-8 border-current opacity-10" />
       </div>
 
       {/* Tabs */}
